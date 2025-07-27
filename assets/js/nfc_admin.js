@@ -80,7 +80,7 @@ function updateNfcStatus() {
         if (!nfcEnabled) {
             updateStatus('NFC 비활성화', 'NFC를 켜주세요', 'error');
         } else {
-            updateStatus('NFC 대기중', '태그를 인식시켜주세요', 'normal');
+            updateStatus('NFC 대기중', '태그를 인식시켜주세요.', 'normal');
         }
     }
 }
@@ -172,7 +172,7 @@ function showToast(message, type = 'success') {
 // Start logging
 function startLogging() {
     if (!currentTagUid) {
-        showToast('먼저 NFC 태그를 인식시켜주세요');
+        showToast('먼저 NFC 태그를 인식시켜주세요.');
         return;
     }
 
@@ -205,7 +205,7 @@ function startLogging() {
 // Stop logging
 function stopLogging() {
     if (!currentTagUid) {
-        showToast('먼저 NFC 태그를 인식시켜주세요');
+        showToast('먼저 NFC 태그를 인식시켜주세요.');
         return;
     }
 
@@ -230,7 +230,7 @@ function stopLogging() {
 // Get logging data
 function getLoggingData() {
     if (!currentTagUid) {
-        showToast('먼저 NFC 태그를 인식시켜주세요');
+        showToast('먼저 NFC 태그를 인식시켜주세요.');
         return;
     }
 
