@@ -1,0 +1,15 @@
+# Firebase
+firebase-service-account.json
+serviceAccountKey.json
+*.serviceAccountKey.json
+
+# Generated files
+checksums.json
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
