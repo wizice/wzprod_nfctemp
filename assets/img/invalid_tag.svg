@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+    <!-- 배경 (연한 크림색) -->
+    <rect x="10" y="10" width="180" height="180" rx="25" ry="25" fill="#faf8f0" stroke="#f59e0b" stroke-width="8">
+        <!-- 부드러운 펄스 애니메이션 -->
+        <animate attributeName="stroke-opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+    </rect>
+
+    <!-- NFC 텍스트 -->
+    <text x="30" y="85" font-family="Arial, sans-serif" font-size="45" font-weight="bold" fill="#2196f3" text-anchor="start">NFC</text>
+
+    <!-- 물음표 아이콘 (온도계 위치) -->
+    <g transform="translate(140, 30)">
+        <!-- 물음표 배경 원 -->
+        <circle cx="10" cy="40" r="35" fill="#f59e0b" opacity="0.2">
+            <animate attributeName="r" values="35;38;35" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="10" cy="40" r="30" fill="#fef3c7"/>
+
+        <!-- 물음표 -->
+        <text x="10" y="55" font-family="Arial, sans-serif" font-size="40" font-weight="bold" fill="#f59e0b" text-anchor="middle">?</text>
+    </g>
+
+    <!-- NFC 안테나/코일 표현 (약간 흐린 상태) -->
+    <g transform="translate(30, 110)">
+        <!-- 코일 형태의 안테나 -->
+        <path d="M 0 10 L 80 10" stroke="#7dd3c0" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <path d="M 0 10 L 0 0 L 15 0" stroke="#7dd3c0" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.7"/>
+        <circle cx="90" cy="10" r="8" fill="#7dd3c0" opacity="0.7">
+            <!-- 부드러운 펄스 -->
+            <animate attributeName="opacity" values="0.7;0.9;0.7" dur="2s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+
+    <!-- 신호 웨이브 (약한 신호) -->
+    <g transform="translate(100, 100)">
+        <circle cx="0" cy="0" r="20" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0">
+            <animate attributeName="r" values="20;40;20" dur="3s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.5;0;0.5" dur="3s" repeatCount="indefinite"/>
+        </circle>
+    </g>
+
+    <!-- 회로 패턴들 (정상이지만 약간 흐림) -->
+    <g transform="translate(30, 130)">
+        <!-- 첫 번째 라인 -->
+        <line x1="0" y1="0" x2="130" y2="0" stroke="#7dd3c0" stroke-width="4" opacity="0.7"/>
+        <line x1="0" y1="0" x2="0" y2="8" stroke="#7dd3c0" stroke-width="4" opacity="0.7"/>
+
+        <!-- 두 번째 라인 -->
+        <line x1="0" y1="15" x2="130" y2="15" stroke="#7dd3c0" stroke-width="4" opacity="0.7"/>
+        <line x1="0" y1="15" x2="0" y2="23" stroke="#7dd3c0" stroke-width="4" opacity="0.7"/>
+
+        <!-- 지그재그 패턴 (부드러운 애니메이션) -->
+        <path d="M 0 30 L 8 32 L 16 28 L 24 35 L 32 31 L 40 38 L 48 29 L 56 36 L 64 33 L 72 31 L 80 37 L 88 34 L 96 32 L 104 39 L 112 35 L 120 33 L 128 36 L 130 35"
+            stroke="#7dd3c0" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="0.7">
+            <animate attributeName="opacity" values="0.7;1;0.7" dur="2s" repeatCount="indefinite"/>
+        </path>
+
+        <!-- 하단 기준선과 눈금 -->
+        <line x1="0" y1="53" x2="130" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <line x1="0" y1="30" x2="0" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <!-- 눈금들 -->
+        <line x1="25" y1="51" x2="25" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <line x1="50" y1="51" x2="50" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <line x1="75" y1="51" x2="75" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <line x1="100" y1="51" x2="100" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+        <line x1="125" y1="51" x2="125" y2="53" stroke="#7dd3c0" stroke-width="1" opacity="0.7"/>
+    </g>
+
+    <!-- 확인 필요 텍스트 -->
+    <text x="100" y="190" font-family="Arial, sans-serif" font-size="12" fill="#f59e0b" text-anchor="middle">
+        Verification needed
+        <animate attributeName="opacity" values="1;0.6;1" dur="2s" repeatCount="indefinite"/>
+    </text>
+</svg>
