@@ -1,0 +1,1313 @@
+/* ===== Temperature Page Styles ===== */
+
+/* ===== Reset & Base ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+}
+
+/* ===== Container ===== */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 40px;
+}
+
+/* ===== Header ===== */
+.header {
+    text-align: left;
+    padding: 40px 20px 30px;
+    position: relative;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+    border-radius: 15px;
+
+}
+
+.header img {
+    width: 180px;
+    height: auto;
+    margin-bottom: 15px;
+}
+
+.header .subtitle {
+    font-size: 0.95em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.header h1 {
+    font-size: 2.2em;
+    font-weight: 600;
+    color: #2c3e50;
+    letter-spacing: -0.02em;
+}
+
+/* ===== Certification Mark ===== */
+.certification-mark {
+    position: absolute;
+
+    top: 60px;
+    width: 60px;
+    height: 60px;
+    right: 106px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.3s ease;
+}
+
+.certification-mark.show {
+    display: flex;
+    opacity: 1;
+    transform: scale(1);
+    animation: certificationBounce 0.6s ease;
+}
+
+.certification-mark img {
+    width: 125px;
+}
+
+/* Admin Menu Button */
+.admin-menu-btn {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+    background: #ecf0f1;
+    border: none;
+    border-radius: 12px;
+    padding: 10px;
+    color: #34495e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-menu-btn:hover {
+    background: #e0e6e8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-menu-btn:active {
+    transform: translateY(0);
+}
+
+@keyframes certificationBounce {
+    0% {
+        transform: scale(0.3);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ===== Tag Info ===== */
+.tag-info {
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.tag-id {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.tag-id span {
+    font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+    color: #333;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+.tag-status {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.tag-status .status-active {
+    color: #4CAF50;
+    font-weight: 500;
+    margin-left: 5px;
+}
+
+/* ===== Summary Grid ===== */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Summary Icons */
+.summary-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.summary-icon.temp-min {
+    background: rgba(33, 150, 243, 0.1);
+    color: #2196F3;
+}
+
+.summary-icon.temp-max {
+    background: rgba(244, 67, 54, 0.1);
+    color: #F44336;
+}
+
+.summary-icon.temp-avg {
+    background: rgba(255, 152, 0, 0.1);
+    color: #FF9800;
+}
+
+.summary-icon.count {
+    background: rgba(76, 175, 80, 0.1);
+    color: #4CAF50;
+}
+
+/* Summary Content */
+.summary-content {
+    flex: 1;
+}
+
+.summary-label {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 2px;
+}
+
+.summary-value {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: #333;
+}
+
+/* ===== Chart Container ===== */
+.chart-container {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    margin-bottom: 30px;
+}
+
+.chart-container h2 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.chart-wrapper {
+    position: relative;
+    height: 300px;
+}
+
+/* ===== Data Table ===== */
+.data-table-container {
+    background: white;
+    padding: 25px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.data-table-container h2 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table th {
+    font-weight: 600;
+    color: #666;
+    font-size: 0.9em;
+    background: #f8f9fa;
+    position: sticky;
+    top: 0;
+}
+
+.data-table td {
+    font-size: 0.95em;
+}
+
+.data-table tr:hover {
+    background: #f8f9fa;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ===== Status Indicators ===== */
+.status-normal {
+    color: #4CAF50;
+    font-weight: 500;
+}
+
+.status-warning {
+    color: #FF9800;
+    font-weight: 500;
+}
+
+.status-critical {
+    color: #F44336;
+    font-weight: 500;
+}
+
+/* ===== Loading Overlay ===== */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 9999;
+}
+
+.loading-overlay.show {
+    display: flex;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e0e0e0;
+    border-top-color: #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    margin-top: 20px;
+    font-size: 1.1em;
+    color: #666;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ===== Toast Message ===== */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 0.95em;
+    opacity: 0;
+    transition: all 0.3s ease;
+    z-index: 10000;
+    max-width: 80%;
+    text-align: center;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+
+    .header {
+        padding: 30px 20px 20px;
+    }
+
+    .header h1 {
+        font-size: 1.8em;
+    }
+
+
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .summary-card {
+        padding: 15px;
+    }
+
+    .summary-icon {
+        width: 40px;
+        height: 40px;
+    }
+
+    .summary-value {
+        font-size: 1.2em;
+    }
+
+    .chart-wrapper {
+        height: 250px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 20px 15px 15px;
+    }
+
+    .header img {
+        width: 140px;
+    }
+
+    .header h1 {
+        font-size: 1.5em;
+    }
+
+
+    .tag-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .data-table {
+        font-size: 0.85em;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 8px 10px;
+    }
+}
+/* Chart Container 높이 수정 */
+.chart-wrapper {
+    height: 350px; /* 기존보다 높게 수정 */
+}
+
+/* 측정 정보 섹션 스타일 */
+.measurement-info {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: #666;
+    font-size: 0.95em;
+    font-weight: 500;
+}
+
+.info-value {
+    font-weight: 600;
+    color: #333;
+}
+
+
+/* 데이터 조회 및 내보내기 섹션 */
+.data-export-section {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.section-header h3 {
+    font-size: 1.1em;
+    color: #333;
+    margin: 0;
+}
+
+.export-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pdf-btn {
+    background: #e53e3e;
+    color: white;
+}
+
+.pdf-btn:hover {
+    background: #c53030;
+    transform: translateY(-1px);
+}
+
+.excel-btn {
+    background: #38a169;
+    color: white;
+}
+
+.excel-btn:hover {
+    background: #2f855a;
+    transform: translateY(-1px);
+}
+
+/* 데이터 테이블 */
+.data-table-wrapper {
+    overflow-x: auto;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.temperature-data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+}
+
+.temperature-data-table th {
+    background: #f8f9fa;
+    padding: 12px 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.temperature-data-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f3f4;
+    color: #333;
+}
+
+.temperature-data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.temperature-data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* 온도 셀 스타일링 */
+.temp-cell {
+    font-weight: 600;
+    font-family: monospace;
+}
+
+.temp-high {
+    color: #e53e3e;
+}
+
+.temp-normal {
+    color: #38a169;
+}
+
+.temp-low {
+    color: #3182ce;
+}
+
+/* 페이지네이션 */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 15px;
+    padding: 10px;
+}
+
+.pagination button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    background: white;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+}
+
+.pagination button:hover:not(:disabled) {
+    background: #f0f0f0;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#pageInfo {
+    font-size: 0.9em;
+    color: #666;
+    min-width: 60px;
+    text-align: center;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .export-buttons {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .chart-mode-buttons {
+        width: 100%;
+    }
+
+    .mode-btn {
+        flex: 1;
+        text-align: center;
+    }
+
+    .temperature-data-table th,
+    .temperature-data-table td {
+        padding: 8px 4px;
+        font-size: 0.8em;
+    }
+}
+
+
+/* 차트 모드 탭 스타일 */
+.chart-mode-tabs {
+    position: relative;
+    display: flex;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 4px;
+    margin: 0 auto 20px;
+    width: fit-content;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.tab-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 120px;
+    justify-content: center;
+    z-index: 2;
+}
+
+.tab-btn:hover:not(.active) {
+    color: #667eea;
+    transform: translateY(-1px);
+}
+
+.tab-btn.active {
+    color: white;
+    font-weight: 600;
+}
+
+.tab-icon {
+    font-size: 1.1em;
+    transition: transform 0.3s ease;
+}
+
+.tab-btn.active .tab-icon {
+    transform: scale(1.1);
+}
+
+.tab-text {
+    transition: all 0.3s ease;
+}
+
+/* 탭 인디케이터 (활성 탭 배경) */
+.tab-indicator {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    height: calc(100% - 8px);
+    width: 124px; /* 탭 버튼과 동일한 너비 */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 8px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* 설정범위 탭이 활성화되었을 때 (기본값) */
+.tab-indicator {
+    transform: translateX(124px); /* 두 번째 탭 위치 */
+}
+
+/* 자동범위 탭이 활성화되었을 때 */
+.chart-mode-tabs.auto-mode .tab-indicator {
+    transform: translateX(0);
+}
+
+/* 탭 호버 효과 */
+.tab-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tab-btn:hover::before {
+    opacity: 1;
+}
+
+.tab-btn.active::before {
+    opacity: 0;
+}
+
+/* 탭 텍스트 애니메이션 */
+@keyframes tabActivate {
+    0% {
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.tab-btn.active .tab-text {
+    animation: tabActivate 0.3s ease;
+}
+
+/* 반응형 탭 */
+@media (max-width: 480px) {
+    .chart-mode-tabs {
+        width: 100%;
+        margin: 0 0 20px 0;
+    }
+
+    .tab-btn {
+        flex: 1;
+        min-width: auto;
+        padding: 10px 12px;
+        font-size: 0.85em;
+    }
+
+    .tab-indicator {
+        width: calc(50% - 6px);
+    }
+
+    .chart-mode-tabs.auto-mode .tab-indicator {
+        transform: translateX(0);
+    }
+
+    .tab-indicator {
+        transform: translateX(calc(100% + 4px));
+    }
+
+    .tab-icon {
+        font-size: 1em;
+    }
+}
+
+/* 추가적인 시각적 효과 */
+.chart-mode-tabs::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #667eea);
+    border-radius: 14px;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.chart-mode-tabs:hover::after {
+    opacity: 0.1;
+}
+
+
+/* PDF 미리보기 모달 스타일 (기존 CSS에 추가) */
+
+.pdf-preview-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.modal-backdrop {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.modal-content-large {
+    position: relative;
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90%;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.2em;
+    color: #333;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+}
+
+.modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+/* PDF 내보내기 버튼 개선 */
+.export-btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.export-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.export-btn:hover::before {
+    left: 100%;
+}
+
+.pdf-btn {
+    background: linear-gradient(135deg, #e53e3e, #c53030);
+}
+
+.pdf-btn:hover {
+    background: linear-gradient(135deg, #c53030, #a02828);
+}
+
+/* 로딩 상태일 때 버튼 스타일 */
+.export-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.export-btn.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* PDF 생성 진행 상태 표시 */
+.pdf-progress {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    z-index: 10001;
+    display: none;
+}
+
+.pdf-progress.show {
+    display: block;
+    animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.progress-text {
+    font-size: 0.9em;
+    margin-bottom: 8px;
+}
+
+.progress-bar {
+    width: 200px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #4CAF50;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+}
+
+/* 반응형 모달 */
+@media (max-width: 768px) {
+    .modal-content-large {
+        width: 95%;
+        max-height: 95%;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px;
+    }
+
+    .modal-header h3 {
+        font-size: 1.1em;
+    }
+}
+
+/* 버튼 그룹 간격 조정 */
+.export-buttons {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+    .export-buttons {
+        width: 100%;
+    }
+
+    .export-btn {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+/* 로딩 관련 CSS (기존 CSS에 추가하거나 수정) */
+
+/* 기본 로딩 오버레이 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(2px);
+}
+
+.loading-overlay.show {
+    display: flex !important;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.loading-text {
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+    max-width: 300px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* PDF 생성 진행 상태 표시 */
+.pdf-progress {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    z-index: 10001;
+    display: none;
+    min-width: 280px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.pdf-progress.show {
+    display: block;
+    animation: slideInRight 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.progress-text {
+    font-size: 0.9em;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4CAF50, #45a049);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 3px;
+    position: relative;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* 버튼 로딩 상태 */
+.export-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+    position: relative;
+}
+
+.export-btn.loading {
+    pointer-events: none;
+}
+
+.export-btn.loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    z-index: 1;
+}
+
+.export-btn.loading span {
+    opacity: 0;
+}
+
+/* 오류 메시지 토스트 */
+.error-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e53e3e;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 10002;
+    display: none;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+}
+
+.error-toast.show {
+    display: block;
+    animation: slideInDown 0.3s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateX(-50%) translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 성공 메시지 토스트 */
+.success-toast {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #4CAF50;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    z-index: 10002;
+    display: none;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.success-toast.show {
+    display: block;
+    animation: slideInDown 0.3s ease;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+    .pdf-progress {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        padding: 15px;
+    }
+
+    .loading-text {
+        font-size: 0.9rem;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+    }
+
+    .error-toast,
+    .success-toast {
+        left: 10px;
+        right: 10px;
+        transform: none;
+        max-width: none;
+    }
+}
+
+/* 다크 모드 지원 (선택적) */
+@media (prefers-color-scheme: dark) {
+    .pdf-progress {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+    }
+
+    .progress-bar {
+        background: rgba(0, 0, 0, 0.3);
+    }
+}

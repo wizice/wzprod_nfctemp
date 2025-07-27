@@ -1,0 +1,740 @@
+/* Reset & Base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.hide {
+    display:none!important;
+}
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f8f9fa;
+    color: #2c3e50;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Container */
+.container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
+}
+
+
+.subtitle {
+    font-size: 1em;
+    color: #7f8c8d;
+    font-weight: 400;
+}
+
+/* Admin Menu Button */
+.admin-menu-btn {
+    position: absolute;
+    top: 40px;
+    right: 20px;
+    background: #ecf0f1;
+    border: none;
+    border-radius: 12px;
+    padding: 10px;
+    color: #34495e;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-menu-btn:hover {
+    background: #e0e6e8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.admin-menu-btn:active {
+    transform: translateY(0);
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.pulse-ring:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.pulse-ring:nth-child(2) {
+    animation-delay: 1s;
+}
+
+.pulse-ring:nth-child(3) {
+    animation-delay: 2s;
+}
+
+/* NFC Icon */
+.nfc-icon {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.nfc-icon svg {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+
+
+/* NFC Card - 더 깊은 그림자와 호버 효과 추가 */
+.nfc-card {
+    background: white;
+    border-radius: 24px;
+    padding: 50px 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1),
+                0 0 0 1px rgba(0, 0, 0, 0.02);
+    width: 100%;
+    max-width: 420px;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+/* 카드 배경 패턴 추가 */
+.nfc-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(102, 126, 234, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+    transform: rotate(45deg);
+    z-index: 0;
+}
+
+.nfc-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* NFC Icon Container - 더 세련된 그라데이션과 글로우 효과 */
+.nfc-icon-container {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto 45px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 32%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25),
+                0 0 80px rgba(102, 126, 234, 0.15),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+    animation: floatAnimation 6s ease-in-out infinite;
+}
+
+/* 플로팅 애니메이션 추가 */
+@keyframes floatAnimation {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+/* Pulse Rings - 더 부드러운 애니메이션 */
+.pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    border-radius: 32%;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    animation: pulse 4s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.6;
+        border-width: 3px;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 0;
+        border-width: 1px;
+    }
+}
+
+/* Status Info - 더 세련된 타이포그래피 */
+.status-title {
+    font-size: 1.75em;
+    font-weight: 700;
+    color: #1a202c;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.status-subtitle {
+    font-size: 1.05em;
+    color: #64748b;
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+/* 스캐닝 상태 - 더 드라마틱한 효과 */
+.nfc-card.scanning {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 30px 80px rgba(102, 126, 234, 0.2),
+                0 0 0 2px rgba(102, 126, 234, 0.3);
+}
+
+.nfc-card.scanning .nfc-icon-container {
+    animation: scanningPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes scanningPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.25),
+                    0 0 80px rgba(102, 126, 234, 0.15),
+                    inset 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 25px 50px rgba(102, 126, 234, 0.35),
+                    0 0 120px rgba(102, 126, 234, 0.25),
+                    inset 0 0 30px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* 성공 상태 - 더 화려한 애니메이션 */
+.nfc-card.success {
+    animation: successBounce 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes successBounce {
+    0% { transform: scale(1) rotate(0deg); }
+    30% { transform: scale(1.1) rotate(-2deg); }
+    60% { transform: scale(0.95) rotate(1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+
+
+@keyframes certificationDrop {
+    0% {
+        transform: scale(0) rotate(-180deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.2) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+/* 추가: 다크모드 지원 (선택사항) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: #0f172a;
+        color: #e2e8f0;
+    }
+
+    .container {
+        background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+    }
+
+    .nfc-card {
+        background: #1e293b;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                    0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .header {
+        background: linear-gradient(to bottom, #1e293b 0%, #1a202c 100%);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .status-title {
+        color: #f1f5f9;
+    }
+
+    .status-subtitle {
+        color: #94a3b8;
+    }
+}
+
+/* 추가: 글래스모피즘 효과 (선택사항) */
+.nfc-icon-container::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg,
+        rgba(102, 126, 234, 0.5),
+        rgba(118, 75, 162, 0.5),
+        rgba(102, 126, 234, 0.5));
+    border-radius: 32%;
+    z-index: -1;
+    filter: blur(15px);
+    opacity: 0.7;
+    animation: glowRotate 10s linear infinite;
+}
+
+@keyframes glowRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
+
+
+
+/* Status Info */
+.status-info {
+    text-align: center;
+}
+
+.status-title {
+    font-size: 1.6em;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.status-subtitle {
+    font-size: 1em;
+    color: #7f8c8d;
+    line-height: 1.5;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+
+.modal-overlay.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 35px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #34495e;
+    font-size: 0.95em;
+}
+
+.form-input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #ecf0f1;
+    border-radius: 12px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    outline: none;
+    background: #fafbfc;
+}
+
+.form-input:focus {
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* Buttons */
+.btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.btn-secondary {
+    background: #ecf0f1;
+    color: #34495e;
+}
+
+.btn-secondary:hover {1
+    background: #e0e6e8;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+.button-group .btn {
+    flex: 1;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #2c3e50;
+    color: white;
+    padding: 16px 28px;
+    border-radius: 50px;
+    font-size: 0.95em;
+    display: none;
+    z-index: 3000;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.toast.show {
+    display: block;
+    animation: toastSlideIn 0.3s ease-out forwards;
+}
+
+/* Animations */
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.3);
+        opacity: 0;
+    }
+}
+
+@keyframes successPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+}
+
+@keyframes errorShake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); }
+    75% { transform: translateX(8px); }
+}
+
+@keyframes certificationBounce {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateX(-50%) translateY(100px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Loading Spinner */
+.loading-spinner {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* 헤더 로고 영역 개선 */
+/* Header */
+.header {
+    text-align: left;
+    padding: 60px 20px 30px;
+    position: relative;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.header h1 {
+    font-size: 2.2em;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+.header img {
+    width: 180px;
+}
+.header {
+    text-align: left;
+    padding: 60px 20px 30px;
+    position: relative;
+    background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+
+/* Responsive */
+@media (max-width: 480px) {
+    .header {
+        padding: 40px 20px 20px;
+    }
+
+    .header h1 {
+        font-size: 1.8em;
+    }
+    .header img {
+        width: 180px;
+    }
+
+    .nfc-card {
+        padding: 40px 30px;
+    }
+
+    .nfc-icon-container {
+        width: 180px;
+        height: 180px;
+    }
+
+    .status-title {
+        font-size: 1.4em;
+    }
+
+
+
+}
+
+
+/* 정품 마크 스타일 */
+/* 인증 마크 개선 */
+.certification-mark.show {
+    display: flex;
+    animation: certificationDrop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.certification-mark {
+    position: absolute;
+    top: 60px;
+    right: 106px;
+    width: 60px;
+    height: 60px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    z-index: 1;
+}
+.certification-mark img {
+    width: 125px;
+
+        }
+
+
+
+.certification-mark.show {
+    display: flex;
+    animation: certificationBounce 0.6s ease;
+}
+
+
+
+/* 로딩 오버레이 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-content {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #2196F3;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 빈 상태 */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+.empty-state h3 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+/* 토스트 메시지 */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #333;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: all 0.3s;
+    z-index: 10000;
+    max-width: 90%;
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background: #4CAF50;
+}
+
+.toast.error {
+    background: #F44336;
+}
+
+.toast.warning {
+    background: #FF9800;
+}
+
+.toast.info {
+    background: #2196F3;
+}
+
+/* 태그 정보 표시 */
+.tag-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.tag-label {
+    font-weight: 600;
+    color: #666;
+}
+
+.tag-value {
+    font-family: monospace;
+    color: #2196F3;
+    font-weight: 500;
+}
+
+#adminModal .modal-dialog {
+    position: absolute;
+    top: 60px !important;
+    left: 15%;
+    transform: translateX(-10%);
+    width: 463px;
+    max-width: 100vw;
+    z-index: 9999;
+}
