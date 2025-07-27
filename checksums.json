@@ -4,7 +4,7 @@
     "fmsh_1.png": "bc91cfa9f2c0f6c2bda3d9112b890dad",
     "nfc_admin_login.html": "f67f2073cc8a1e201fe90217c91ccf16",
     "nfc_admin_settings.html": "4726bfbc15dca615cd64ed721884a7c0",
-    "nfc_main.html": "b40eaa7d8b1462f446881206a8f789f5",
+    "nfc_main.html": "aef99d6e49911f93024cb24a5b4f83cf",
     "nfc_temperature_main.html": "cd40b6087ca26cc46431ffe7f1efddbc",
     "css/bootstrap.min.css": "94994c66fec8c3468b269dc0cc242151",
     "css/fontawesome_all.css": "6386fb409d4a2abc96eee7be8f6d4cc4",
@@ -32,6 +32,6 @@
     "js/nfc_main.js": "cb1b922a8b31b42442c91d7072a5ab08",
     "js/nfc_temperature.js": "a4e9a3caf243fc26c51f17d9a5181a3c"
   },
-  "generated_at": "2025-07-28T00:28:50.212445",
+  "generated_at": "2025-07-28T00:43:14.945564",
   "total_files": 31
 }
