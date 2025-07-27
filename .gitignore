@@ -4,7 +4,7 @@ serviceAccountKey.json
 *.serviceAccountKey.json
 
 # Generated files
-checksums.json
+#checksums.json
 
 # IDE
 .idea/
