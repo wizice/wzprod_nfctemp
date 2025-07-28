@@ -33,7 +33,7 @@
     "js/nfc_main.js": "cb1b922a8b31b42442c91d7072a5ab08",
     "js/nfc_temperature.js": "a4e9a3caf243fc26c51f17d9a5181a3c"
   },
-  "generated_at": "2025-07-28T12:40:57.949351",
+  "generated_at": "2025-07-28T12:56:52.005257",
   "total_files": 32,
   "android_min_api": 19,
   "encryption_method": "fallback"
