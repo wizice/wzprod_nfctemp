@@ -7,6 +7,11 @@
 .hide {
     display:none!important;
 }
+.no-select-img {
+    user-select: none;             /* 텍스트 선택 방지 */
+    -webkit-user-drag: none;       /* 이미지 드래그 방지 */
+    -webkit-touch-callout: none;   /* iOS에서 이미지 길게 눌렀을 때 메뉴 방지 */
+}
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #f8f9fa;
