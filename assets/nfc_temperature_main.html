@@ -6,7 +6,8 @@
     <title>SC Point - 온도 데이터</title>
 
     <!-- External CSS -->
-    <link rel="stylesheet" href="css/nfc_temperature.css">
+    <link rel="stylesheet" href="css/nfc_top.css?ts=202507300715">
+    <link rel="stylesheet" href="css/nfc_temperature.css?ts=202507300715">
 
     <!-- Chart.js - Local file -->
     <script src="js/chart.min.js"></script>
@@ -17,34 +18,30 @@
 </head>
 <body>
 <!-- 정품 마크 -->
-<div class="certification-mark"  id="certificationMark">
+<div class="certification-mark" id="certificationMark">
     <img src="img/certification_mark.png">
 </div>
 
 <div class="container">
     <!-- Header -->
     <div class="header">
-        <a href="nfc_main.html" >
-            <img  id="logo_img"  src="img/company_logo.png">
-        </a>
-        <div class="subtitle">NFC 온도센서라벨</div>
-
-        <h1>온도 측정 데이터</h1>
+        <img  id="logo_img"  class="no-select-img" src="img/company_logo.png">
+        <div class="subtitle">NFC 온도기록라벨</div>
         <!-- Admin Menu Button -->
-        <button class="admin-menu-btn " id="adminMenuBtn"   aria-label="관리자 메뉴">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="10" r="3"></circle>
-                <circle cx="20" cy="21" r="3"></circle>
-                <circle cx="4" cy="21" r="3"></circle>
-                <path d="M12 13v8m8-5l-6.1-6.1M4 18l6.1-6.1"></path>
-            </svg>
+        <button class="top-icon-btn home-btn" id="homeBtn" aria-label="홈">
+            <img src="img/home.svg">
         </button>
-        <div class="header-spacer"></div>
+        <!-- Admin Menu Button -->
+        <button class="top-icon-btn admin-menu-btn" id="adminMenuBtn" aria-label="관리자 메뉴">
+            <img src="img/manager_login.svg" >
+        </button>
     </div>
+
 
     <!-- 1. Chart Container에 모드 선택 버튼 추가 -->
     <!-- 1. HTML - 탭 형태로 변경 -->
     <div class="chart-container">
+
         <!-- 차트 모드 탭 -->
         <div class="chart-mode-tabs">
             <button id="autoModeBtn" class="tab-btn" onclick="changeChartMode('auto')">
@@ -175,8 +172,9 @@
 
     <script src="js/jquery-3.6.0.min.js"></script>
     <script src="js/html2pdf.bundle.min.js"></script>
-    <script src="js/manage_tag.js?ts=202507250908"></script>
-    <script src="js/nfc_temperature.js?ts=2025072523"></script>
+    <script src="js/manage_tag.js?ts=202507300715"></script>
+    <script src="js/nfc_common.js?ts=202507300715"></script>
+    <script src="js/nfc_temperature.js?ts=202507300715"></script>
 
 </body>
 </html>

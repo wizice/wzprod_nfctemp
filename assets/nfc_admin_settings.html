@@ -7,7 +7,8 @@
 
     <!-- External CSS -->
     <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/nfc_admin.css?ts=20250725">
+    <link rel="stylesheet" href="css/nfc_top.css?ts=202507300715">
+    <link rel="stylesheet" href="css/nfc_admin.css?ts=202507300715">
 
 
 </head>
@@ -17,12 +18,19 @@
     <img src="img/certification_mark.png">
 </div>
 
-<div class="container" style=" margin-top: 60px;">
-    <!-- Admin Header -->
-    <div class="admin-header">
-        <button class="logout-btn" onclick="logout()">로그아웃</button>
-        <h1>관리자 설정</h1>
-        <p>NFC 태그 로깅 설정을 관리합니다</p>
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img  id="logo_img"  class="no-select-img" src="img/company_logo.png">
+        <div class="subtitle">NFC 온도기록라벨</div>
+        <!-- Admin Menu Button -->
+        <button class="top-icon-btn home-btn" id="homeBtn" aria-label="홈">
+            <img src="img/home.svg">
+        </button>
+        <!-- Admin Menu Button -->
+        <button class="top-icon-btn admin-menu-btn" id="adminMenuBtn" aria-label="관리자 메뉴">
+            <img src="img/manager_login.svg" >
+        </button>
     </div>
 
     <!-- NFC Status -->
@@ -72,7 +80,7 @@
         <div class="settings-card">
             <div class="settings-header">
                 <h5>온도기록 세팅</h5>
-                <button class="btn-logout" onclick="logout()">
+                <button class="btn-logout"  >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                         <polyline points="16 17 21 12 16 7"></polyline>
@@ -332,7 +340,8 @@
 
 <script src="js/jquery-3.6.0.min.js"></script>
 <script src="js/bootstrap.bundle.min.js"></script>
-<script src="js/manage_tag.js?ts=202507250908"></script>
-<script src="js/nfc_admin.js?ts=20250725"></script>
+<script src="js/manage_tag.js?ts=202507300715"></script>
+<script src="js/nfc_common.js?ts=202507300715"></script>
+<script src="js/nfc_admin.js?ts=202507300715"></script>
 </body>
 </html>

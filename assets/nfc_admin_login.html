@@ -4,20 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>관리자 로그인</title>
-    <link rel="stylesheet" href="css/nfc_admin_login.css">
+    <link rel="stylesheet" href="css/nfc_top.css?ts=202507300715">
+    <link rel="stylesheet" href="css/nfc_admin_login.css?ts=202507300715">
 </head>
 <body>
-<div class="login-container">
-    <!-- 헤더 -->
-    <div class="login-header">
-        <button class="back-btn" onclick="goBack()">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-        </button>
-        <h1>관리자 로그인</h1>
-    </div>
+<!-- 정품 마크 -->
+<div class="certification-mark" id="certificationMark">
+    <img src="img/certification_mark.png">
+</div>
 
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <img  id="logo_img"  class="no-select-img" src="img/company_logo.png">
+        <div class="subtitle">NFC 온도기록라벨</div>
+        <!-- Admin Menu Button -->
+        <button class="top-icon-btn home-btn" id="homeBtn" aria-label="홈">
+            <img src="img/home.svg">
+        </button>
+        <!-- Admin Menu Button -->
+        <button class="top-icon-btn admin-menu-btn" id="adminMenuBtn" aria-label="관리자 메뉴">
+            <img src="img/manager_login.svg" >
+        </button>
+    </div>
     <!-- 알림 토스트 -->
     <div id="toast" class="toast"></div>
 
@@ -98,7 +107,10 @@
     </div>
 
 </div>
-<script src="js/manage_tag.js?ts=202507250908"></script>
-<script src="js/nfc_admin_login.js"></script>
+<script src="js/jquery-3.6.0.min.js"></script>
+
+<script src="js/manage_tag.js?ts=202507300715"></script>
+<script src="js/nfc_common.js?ts=202507300715"></script>
+<script src="js/nfc_admin_login.js?ts=202507300715"></script>
 </body>
 </html>

@@ -43,10 +43,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-    $("#adminMenuBtn").click(function(){
-        let ts = new Date().getTime();
-        location.href="nfc_admin_login.html?ts="+ ts;
-    })
 });
 
 
@@ -430,7 +426,7 @@ function getMeasurementStatusText(status) {
     switch (String(status)) {
         case "0": return "대기 (측정 시작 전)";
         case "1": return "측정 중 (현재 온도 로깅 진행 중)";
-        case "2": return "비정상 종료 (측정이 중간에 중단됨)";
+        case "2": return "태그가 측정중인 상태가 아닙니다.";
         case "3": return "정상 완료 (모든 측정이 완료됨)";
         default: return "알 수 없음";
     }
@@ -711,8 +707,7 @@ function getMeasurementStatusText(status) {
 
 // 뒤로 가기
 function goBack() {
-    let back_url     = sessionStorage.getItem("back_url") || "nfc_main.html";
-    sessionStorage.setItem("back_url", "");
+    let back_url     = gwzCommon.clear_back_url()
     if ( back_url == "") {
         back_url     = "nfc_main.html";
     }
@@ -1070,7 +1065,7 @@ async function addPdfHeader(doc) {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(12);
         doc.setTextColor(100, 100, 100); // 중간 회색
-        doc.text('TempReco - NFC 온도센서라벨', 60, currentY + 11);
+        doc.text('TempReco - NFC 온도기록라벨', 60, currentY + 11);
 
         currentY += 25;
 
@@ -2277,7 +2272,7 @@ function updateExportButtons() {
 
 // 9. 페이지 로드 시 버튼 업데이트
 document.addEventListener('DOMContentLoaded', function() {
-    // 기존 초기화 코드...
+
 
     // 안드로이드 환경에서만 버튼 업데이트
     if (typeof Android !== 'undefined') {
@@ -2304,10 +2299,10 @@ async function generatePDFReport() {
 
          // PDF 메타데이터 설정
          doc.setProperties({
-             title: 'NFC Temperature Sensor Data Report',
+             title: 'NFC Temperature Recording Data Report',
              subject: 'Temperature Measurement Data',
              author: 'TempReco',
-             keywords: 'NFC, Temperature, Sensor, Data, wizice',
+             keywords: 'NFC, Temperature, Recording, Data, wizice',
              creator: 'wizice.com'
          });
 
@@ -2321,7 +2316,7 @@ async function generatePDFReport() {
          yPos += 10;
          doc.setFontSize(14);
          doc.setTextColor(100, 100, 100);
-         doc.text('NFC Temperature Sensor Label', 105, yPos, { align: 'center' });
+         doc.text('NFC Temperature Recording Label', 105, yPos, { align: 'center' });
 
          yPos += 10;
          doc.setFontSize(16);
@@ -2527,7 +2522,7 @@ function createPDFContent() {
         <!-- 헤더 -->
         <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #667eea; padding-bottom: 20px;">
             <h1 style="font-size: 28px; margin: 0; color: #667eea;">TempReco</h1>
-            <p style="font-size: 16px; margin: 5px 0; color: #666;">NFC 온도센서라벨</p>
+            <p style="font-size: 16px; margin: 5px 0; color: #666;">NFC 온도기록라벨</p>
             <h2 style="font-size: 22px; margin: 15px 0; color: #333;">온도 측정 데이터 리포트</h2>
         </div>
 
@@ -2747,7 +2742,7 @@ function getMeasurementStatusText(status) {
     switch (String(status)) {
         case "0": return "대기 (측정 시작 전)";
         case "1": return "측정 중 (현재 온도 로깅 진행 중)";
-        case "2": return "비정상 종료 (측정이 중간에 중단됨)";
+        case "2": return "태그가 측정중인 상태가 아닙니다.";
         case "3": return "정상 완료 (모든 측정이 완료됨)";
         default: return "알 수 없음";
     }
@@ -2756,7 +2751,7 @@ function getMeasurementStatusTextEng(status) {
    switch (String(status)) {
        case "0": return "Standby (Before measurement start)";
        case "1": return "Measuring (Temperature logging in progress)";
-       case "2": return "Abnormal termination (Measurement interrupted)";
+       case "2": return "The tag is not in a measuring state.";
        case "3": return "Completed (All measurements completed)";
        default: return "Unknown";
    }

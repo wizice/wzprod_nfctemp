@@ -1,112 +1,7 @@
 /* ===== Temperature Page Styles ===== */
 
-/* ===== Reset & Base ===== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #f5f7fa;
-    color: #333;
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    min-height: 100vh;
-}
 
-/* ===== Container ===== */
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-    padding-bottom: 40px;
-}
-
-/* ===== Header ===== */
-.header {
-    text-align: left;
-    padding: 40px 20px 30px;
-    position: relative;
-    background: linear-gradient(to bottom, #ffffff 0%, #fafbfc 100%);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    margin-bottom: 30px;
-    border-radius: 15px;
-
-}
-
-.header img {
-    width: 180px;
-    height: auto;
-    margin-bottom: 15px;
-}
-
-.header .subtitle {
-    font-size: 0.95em;
-    color: #666;
-    margin-bottom: 10px;
-}
-
-.header h1 {
-    font-size: 2.2em;
-    font-weight: 600;
-    color: #2c3e50;
-    letter-spacing: -0.02em;
-}
-
-/* ===== Certification Mark ===== */
-.certification-mark {
-    position: absolute;
-
-    top: 60px;
-    width: 60px;
-    height: 60px;
-    right: 106px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 1;
-    opacity: 0;
-    transform: scale(0.8);
-    transition: all 0.3s ease;
-}
-
-.certification-mark.show {
-    display: flex;
-    opacity: 1;
-    transform: scale(1);
-    animation: certificationBounce 0.6s ease;
-}
-
-.certification-mark img {
-    width: 125px;
-}
-
-/* Admin Menu Button */
-.admin-menu-btn {
-    position: absolute;
-    top: 40px;
-    right: 20px;
-    background: #ecf0f1;
-    border: none;
-    border-radius: 12px;
-    padding: 10px;
-    color: #34495e;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.admin-menu-btn:hover {
-    background: #e0e6e8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.admin-menu-btn:active {
-    transform: translateY(0);
-}
 
 @keyframes certificationBounce {
     0% {
@@ -384,17 +279,6 @@ body {
 
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
-
-    .header {
-        padding: 30px 20px 20px;
-    }
-
-    .header h1 {
-        font-size: 1.8em;
-    }
 
 
     .summary-grid {
@@ -421,17 +305,6 @@ body {
 }
 
 @media (max-width: 480px) {
-    .header {
-        padding: 20px 15px 15px;
-    }
-
-    .header img {
-        width: 140px;
-    }
-
-    .header h1 {
-        font-size: 1.5em;
-    }
 
 
     .tag-info {

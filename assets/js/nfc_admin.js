@@ -26,9 +26,21 @@ window.addEventListener('DOMContentLoaded', function() {
 
     //
     $("#getLogging").click(function(){
-        sessionStorage.setItem("back_url", "nfc_admin_settings.html");
-        let ts = new Date().getTime();
-        location.href = "nfc_temperature_main.html?ts=" + ts ;
+         if (!currentTagUid) {
+             showToast('먼저 NFC 태그를 인식시켜주세요.');
+             return;
+         }
+
+
+        // Disable button
+        const btn = event.target.closest('button');
+        btn.disabled = true;
+        btn.classList.add('loading');
+
+
+        gwzCommon.set_back_url( currentTagUid );
+
+        go_temparature_page();
     })
 });
 
@@ -227,26 +239,20 @@ function stopLogging() {
     }
 }
 
-// Get logging data
-function getLoggingData() {
-    if (!currentTagUid) {
-        showToast('먼저 NFC 태그를 인식시켜주세요.');
-        return;
-    }
-
-    // Disable button
-    const btn = event.target.closest('button');
-    btn.disabled = true;
-    btn.classList.add('loading');
+// move to temparature
+function go_temparature_page() {
 
     // Call native method
-    if (window.Android && window.Android.getLoggingData) {
-        window.Android.getLoggingData(currentTagUid);
+    let ts = new Date().getTime();
+    //let move_url     =   "nfc_temperature_main.html?ts=" + ts ;
+    let move_url     =   "nfc_main.html?ts=" + ts ;
+    if (window.Android && window.Android.moveUrl) {
+        window.Android.moveUrl(move_url);
     } else {
         // For testing - navigate to temperature page
         setTimeout(() => {
-            window.location.href = 'nfc_temperature_main.html';
-        }, 1000);
+            window.location.href = move_url;
+       }, 500);
     }
 }
 

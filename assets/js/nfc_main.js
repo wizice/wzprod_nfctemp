@@ -31,14 +31,13 @@ document.addEventListener('DOMContentLoaded', function() {
         updateLastTagInfo(savedTag);
     }
 
-    document.getElementById('adminMenuBtn').addEventListener('click', function() {
-        if (window.NfcInterface && window.NfcInterface.navigateToAdminLogin) {
-            // Android 메서드 호출 (플래그 설정 포함)
-            window.NfcInterface.navigateToAdminLogin();
-        } else {
-            window.location.href = 'nfc_admin_login.html';
-        }
-    });
+    //-- 관리자 모드이면 태그 데이터 바로 읽기
+    let currentTagUid = gwzCommon.get_back_url();
+    if ( currentTagUid) {
+        onTagAuthenticated(currentTagUid);
+    }
+
+
 });
 
 // NFC 상태 초기화
@@ -225,11 +224,13 @@ function onTagAuthenticated(uid) {
 
     app.isScanning = false;
     showCertificationMark();
-    updateStatus('정품 확인됨', '온도 데이터를 읽는 중...', 'success');
+    updateStatus('정품 확인됨', '데이터를 읽는중입니다.\n잠시만 태그를 움직이지 말고 기다려 주세요.', 'success');
     $("#nfcIcon").addClass("hide");
     $("#nfcReading").removeClass("hide");
     $("#nfcInvalid").addClass("hide");
 
+
+    gwzCommon.startProgressBar(2500);
 
     // 로딩 표시
     showLoading('온도 데이터를 읽고 있습니다...');
@@ -247,35 +248,9 @@ function onTagAuthenticated(uid) {
     }, 1500);
 }
 
-// 태그 인증 실패 콜백
-function onTagNotAuthenticated(uid ) {
-    console.log('Tag not authenticated');
-    $("#nfcIcon").addClass("hide");
-    $("#nfcReading").addClass("hide");
-    $("#nfcInvalid").removeClass("hide");
 
-    app.isScanning = false;
-    hideCertificationMark();
-//    updateStatus('인증 실패', '미등록 태그:' + uid , 'error');
-    updateStatus('인증 실패', '미등록 태그입니다.' , 'error');
 
-    showToast('등록되지 않은 태그가 인식되었습니다. 정품 태그를 사용해 주세요.');
-}
-
-// 태그 인증 성공 콜백 - 수정된 버전
-function onTagAuthenticated(uid) {
-    console.log('Tag authenticated:', uid);
-
-    app.isScanning = false;
-    showCertificationMark();
-    updateStatus('정품 확인됨', '온도 데이터를 읽는 중...', 'success');
-    $("#nfcIcon").addClass("hide");
-    $("#nfcReading").removeClass("hide");
-    $("#nfcInvalid").addClass("hide");
-
-    // 로딩 표시
-    showLoading('온도 데이터를 읽고 있습니다...');
-
+function fn_readTemperatureData( uid ){
     // 온도 데이터 읽기 시작
     setTimeout(() => {
         if (window.Android && window.Android.readTemperatureData) {
@@ -328,10 +303,12 @@ function onTemperatureDataReceived(data) {
             // temperature 페이지로 이동
             window.location.href = 'nfc_temperature_main.html';
         } else {
+            gwzCommon.clearProgressBar();
             updateStatus('데이터 읽기 실패', '온도 데이터를 읽을 수 없습니다', 'error');
             showToast('온도 데이터를 읽을 수 없습니다. 다시 시도해주세요.');
         }
     } catch (e) {
+        gwzCommon.clearProgressBar();
         console.error('Failed to process temperature data:', e);
         updateStatus('데이터 처리 실패', '데이터 형식이 올바르지 않습니다', 'error');
         showToast('데이터 처리 중 오류가 발생했습니다.');
@@ -360,11 +337,13 @@ function onAdminLoginFailed(message) {
 function onError(message) {
     console.error('Error received:', message);
     hideLoading();
+    gwzCommon.clearProgressBar();
     if ( message.indexOf("communication error") >= 0) {
             updateStatus('NFC 태그 대기중', '태그를 다시 인식시켜주세요.', '확인');
             showToast(message || '오류가 발생했습니다');
     } else {
-        updateStatus('오류 발생', message || '알 수 없는 오류가 발생했습니다', 'error');
+        updateStatus('오류 발생', '태그를 다시 인식시켜주세요.', '확인');
+        //updateStatus('오류 발생', message || '알 수 없는 오류가 발생했습니다', 'error');
         showToast(message || '오류가 발생했습니다');
     }
 
@@ -381,12 +360,8 @@ function goToAdminSettings() {
 
 
 // 전역 함수로 등록
-window.onNfcTagDetected = onNfcTagDetected;
-window.onTagAuthenticated = onTagAuthenticated;
-window.onTagNotAuthenticated = onTagNotAuthenticated;
-window.onTemperatureDataReceived = onTemperatureDataReceived;
+
+
 window.onAdminLoginSuccess = onAdminLoginSuccess;
 window.onAdminLoginFailed = onAdminLoginFailed;
 window.onError = onError;
-window.showLoading = showLoading;
-window.hideLoading = hideLoading;
