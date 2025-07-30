@@ -11,7 +11,7 @@
     "css/nfc_admin.css": "460fc364fd24e7e00842d7a0224ea24c",
     "css/nfc_admin_login.css": "75fed8432a2c666e746c88dc7826734f",
     "css/nfc_main.css": "91bf44f078850fd37928d6c813fd7ee7",
-    "css/nfc_temperature.css": "5b930e1cabe1870bacb2f2e346a068ac",
+    "css/nfc_temperature.css": "a854dabc71453ff78ceacfd56b86fc91",
     "css/nfc_top.css": "5c3f84c6c2f6cc6bfcdb2edb2dbc2db2",
     "img/certification_mark.png": "c0c99333be536d2abbed3d147c679c00",
     "img/company_logo.jpg": "d04ee7f46136d8b947f5eb94492d5c94",
@@ -34,10 +34,10 @@
     "js/nfc_admin_cache_management.js": "ab33c92aa2233eee446b349d9cbce8a5",
     "js/nfc_admin_login.js": "82a475fa1d43448ac3867495398e3b48",
     "js/nfc_common.js": "96d4ac0a701026eb42a58a8d2878460e",
-    "js/nfc_main.js": "964ffa64e2c1a43715d83b2489eedd24",
-    "js/nfc_temperature.js": "48885b353b14b9b13b18095e31dcd26c"
+    "js/nfc_main.js": "100defc945453685cd323bbba9e6a51c",
+    "js/nfc_temperature.js": "2c1d6c64212566156bb4f56f40c81275"
   },
-  "generated_at": "2025-07-30T07:43:05.189539",
+  "generated_at": "2025-07-30T09:28:55.089252",
   "total_files": 36,
   "android_min_api": 19,
   "encryption_method": "fallback"

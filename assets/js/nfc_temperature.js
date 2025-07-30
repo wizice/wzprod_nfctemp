@@ -2002,52 +2002,51 @@ function addErrorMessage(doc, errorMsg) {
 window.addDataTableToPdf = addDataTableToPdf;
 
 
-// 2. Excel(CSV) 데이터를 Base64로 안드로이드에 전송
-function exportToExcelViaAndroid() {
-    if (!currentData || !currentData.data) {
-        alert('내보낼 데이터가 없습니다.');
-        return;
-    }
-
+// Excel/CSV 내보내기 함수 수정
+async function exportToExcelViaAndroid(autoShare = false) {
     try {
-        if (typeof Android === 'undefined' || !Android.saveFileFromBase64) {
-            alert('안드로이드 앱에서만 사용 가능한 기능입니다.');
+        if (!currentData || !currentData.data) {
+            showToast('내보낼 데이터가 없습니다.');
             return;
         }
 
-        const temperatureData = currentData.data || currentData.temperatureData;
+        showLoading('CSV 파일 생성 중...');
 
-        // CSV 데이터 생성
-        let csvContent = '\uFEFF'; // UTF-8 BOM
-        csvContent += '번호,시간,온도(°C),상태,범위체크\n';
+        // CSV 헤더
+        let csvContent = 'Time,Temperature(°C),Status\n';
 
-        temperatureData.forEach((item, index) => {
-            const rangeCheck = checkTemperatureRange(item.temperature);
-            csvContent += `${index + 1},${item.time || '-'},${item.temperature ? item.temperature.toFixed(1) : '-'},정상,${rangeCheck.text}\n`;
+        // 데이터 행 추가
+        currentData.data.forEach((item, index) => {
+            const time = formatTime(item.time || `${index * (currentData.intervalTime || 600)}초`);
+            const temp = item.temperature.toFixed(1);
+            const status = item.status || 'Normal';
+
+            csvContent += `"${time}","${temp}","${status}"\n`;
         });
 
-        // CSV를 Base64로 인코딩
-        const base64Data = btoa(unescape(encodeURIComponent(csvContent)));
-
-        const fileName = `temperature_data_${new Date().toISOString().split('T')[0]}.csv`;
-
+        // 메타데이터
         const metadata = {
-            fileName: fileName,
-            fileSize: base64Data.length,
-            mimeType: 'text/csv',
-            tagId: currentData?.uid || 'unknown',
-            measurementCount: temperatureData.length,
-            createdAt: new Date().toISOString()
+            fileName: `Temperature_Data_${currentData.uid}_${new Date().toISOString().split('T')[0]}.csv`,
+            tagId: currentData.uid || 'unknown',
+            measurementCount: currentData.data.length,
+            createdAt: new Date().toISOString(),
+            autoShare: autoShare
         };
 
-        // 안드로이드로 전송
-        Android.saveFileFromBase64(base64Data, JSON.stringify(metadata), 'csv');
+        hideLoading();
 
-        showToast('CSV 파일 생성을 안드로이드에 요청했습니다.');
+        // Android로 전송
+        if (window.Android && window.Android.saveToExcel) {
+            window.Android.saveToExcel(csvContent, JSON.stringify(metadata));
+        } else {
+            // 웹 브라우저에서 직접 다운로드
+            downloadCSV(csvContent, metadata.fileName);
+        }
 
     } catch (error) {
-        console.error('CSV 생성/전송 오류:', error);
-        alert('CSV 생성 중 오류가 발생했습니다: ' + error.message);
+        console.error('CSV 생성 오류:', error);
+        hideLoading();
+        showToast('CSV 파일 생성에 실패했습니다.');
     }
 }
 
@@ -2289,22 +2288,36 @@ window.exportAllFormatsViaAndroid = exportAllFormatsViaAndroid;
 
 // nfc_temperature.js - PDF 생성 관련 기능 정리
 
+// Android 버전 확인 함수
+function getAndroidVersion() {
+    if (window.Android && window.Android.getAndroidVersion) {
+        return window.Android.getAndroidVersion();
+    }
+    return 'unknown';
+}
+
 // ===== PDF 생성 메인 함수 =====
-async function generatePDFReport() {
+async function generatePDFReport(autoShare = true ) {
      try {
-         showPdfLoading('PDF 생성 준비 중...', 10);
+        // Android 버전 체크
+        const androidVersion = getAndroidVersion();
+        console.log('Android Version:', androidVersion);
 
-         const { jsPDF } = window.jspdf;
-         const doc = new jsPDF('p', 'mm', 'a4');
+        showPdfLoading('PDF 생성 준비 중...', 10);
 
-         // PDF 메타데이터 설정
-         doc.setProperties({
-             title: 'NFC Temperature Recording Data Report',
-             subject: 'Temperature Measurement Data',
-             author: 'TempReco',
-             keywords: 'NFC, Temperature, Recording, Data, wizice',
-             creator: 'wizice.com'
-         });
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+
+        // PDF 메타데이터 설정
+        doc.setProperties({
+            title: 'NFC Temperature Recording Data Report',
+            subject: 'Temperature Measurement Data',
+            author: 'TempReco',
+            keywords: 'NFC, Temperature, Recording, Data, wizice',
+            creator: 'wizice.com'
+        });
+
+
 
          let yPos = 20;
 
@@ -2318,50 +2331,24 @@ async function generatePDFReport() {
          doc.setTextColor(100, 100, 100);
          doc.text('NFC Temperature Recording Label', 105, yPos, { align: 'center' });
 
-         yPos += 10;
-         doc.setFontSize(16);
-         doc.setTextColor(0, 0, 0);
-         doc.text('Temperature Measurement Data Report', 105, yPos, { align: 'center' });
-
-         yPos += 20;
+         yPos += 15;
 
          // 2. 기본 정보
          doc.setFontSize(14);
          doc.setTextColor(102, 126, 234);
-         doc.text('Basic Information', 20, yPos);
+         doc.text('Measurement Results', 20, yPos);
 
-         yPos += 10;
+         yPos += 7;
          doc.setFontSize(10);
          doc.setTextColor(0, 0, 0);
 
          // 정보 테이블
-         const basicInfo = [
+         const results = [
              ['Tag ID', currentData?.uid || 'N/A'],
              ['Measurement Status', getMeasurementStatusTextEng(currentData?.measurementStatus || '0')],
              ['Start Time', currentData?.measurementStartTime || '-'],
-             ['Interval', currentData?.intervalTime ? `${parseInt(currentData.intervalTime/60)}분` : '-']
-         ];
+             ['Interval', currentData?.intervalTime ? `${parseInt(currentData.intervalTime/60)} Min` : '-'],
 
-         basicInfo.forEach(([label, value]) => {
-             doc.setFont(undefined, 'bold');
-             doc.text(label + ':', 25, yPos);
-             doc.setFont(undefined, 'normal');
-             doc.text(value, 70, yPos);
-             yPos += 8;
-         });
-
-         yPos += 10;
-
-         // 3. 측정 결과
-         doc.setFontSize(14);
-         doc.setTextColor(102, 126, 234);
-         doc.text('Measurement Results', 20, yPos);
-
-         yPos += 10;
-         doc.setFontSize(10);
-         doc.setTextColor(0, 0, 0);
-
-         const results = [
              ['Max Temperature', currentData?.maxTemp ? `${currentData.maxTemp.toFixed(1)}°C` : '-'],
              ['Min Temperature', currentData?.minTemp ? `${currentData.minTemp.toFixed(1)}°C` : '-'],
              ['Temperature Range', currentData?.temperatureRange || '-'],
@@ -2382,10 +2369,10 @@ async function generatePDFReport() {
 
              doc.text(value, 70, yPos);
              doc.setTextColor(0, 0, 0); // 색상 리셋
-             yPos += 8;
+             yPos += 4;
          });
 
-         yPos += 10;
+         yPos += 7;
 
          // 4. 차트 이미지 추가 (canvas에서 직접)
          showPdfLoading('차트 이미지 생성 중...', 50);
@@ -2398,11 +2385,11 @@ async function generatePDFReport() {
              doc.setFontSize(14);
              doc.setTextColor(102, 126, 234);
              doc.text('Temperature Chart', 20, yPos);
-             yPos += 10;
+             yPos += 0;
 
              // 차트 이미지 삽입
              const imgWidth = 170;
-             const imgHeight = 80;
+             const imgHeight = 180;
              doc.addImage(chartImage, 'PNG', 20, yPos, imgWidth, imgHeight);
              yPos += imgHeight + 10;
          }
@@ -2466,38 +2453,40 @@ async function generatePDFReport() {
              doc.text('© TempReco - NFC Temperature Label', 105, 290, { align: 'center' });
          }
 
-         showPdfLoading('PDF 변환 중...', 80);
+        showPdfLoading('PDF 변환 중...', 80);
 
-         // PDF를 Base64로 변환
-         const pdfBase64 = doc.output('datauristring');
-         const base64Data = pdfBase64.split(',')[1];
+        const pdfBase64 = doc.output('datauristring');
+        const base64Data = pdfBase64.split(',')[1];
 
-         // 메타데이터 생성
-         const metadata = {
-             fileName: `Temperature_Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
-             fileSize: base64Data.length,
-             mimeType: 'application/pdf',
-             tagId: currentData?.uid || 'unknown',
-             measurementCount: currentData?.data?.length || 0,
-             measurementStatus: currentData?.measurementStatus || '0',
-             createdAt: new Date().toISOString()
-         };
+        // 메타데이터 생성
+        const metadata = {
+            fileName: `Temperature_Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
+            fileSize: base64Data.length,
+            mimeType: 'application/pdf',
+            tagId: currentData?.uid || 'unknown',
+            measurementCount: currentData?.data?.length || 0,
+            measurementStatus: currentData?.measurementStatus || '0',
+            createdAt: new Date().toISOString(),
+            autoShare: autoShare  // 자동 공유 옵션
+        };
 
-         showPdfLoading('안드로이드로 전송 중...', 100);
+        showPdfLoading('안드로이드로 전송 중...', 100);
 
-         // Android로 전송
-         if (window.Android && window.Android.savePdfFromBase64) {
-             window.Android.savePdfFromBase64(base64Data, JSON.stringify(metadata));
-         }
+        // Android 인터페이스 호출
+        if (window.Android && window.Android.savePdfFromBase64) {
+            window.Android.savePdfFromBase64(base64Data, JSON.stringify(metadata));
+        } else {
+            // 웹 브라우저에서 실행 중
+            downloadPDFDirectly();
+        }
 
-         hidePdfLoading();
-         showToast('PDF가 생성되었습니다');
+        hidePdfLoading();
 
-     } catch (error) {
-         console.error('PDF 생성 실패:', error);
-         hidePdfLoading();
-         showToast('PDF 생성에 실패했습니다: ' + error.message);
-     }
+    } catch (error) {
+        console.error('PDF 생성 실패:', error);
+        hidePdfLoading();
+        showToast('PDF 생성에 실패했습니다: ' + error.message);
+    }
  }
 
 // ===== PDF 내용 생성 =====
@@ -2838,7 +2827,261 @@ async function downloadPDFDirectly() {
     }
 }
 
-// ===== 전역 함수 등록 =====
+// 파일 저장 성공 콜백 - 공유 옵션 포함
+window.onFileSaveSuccess = function(fileName, filePath, fileType) {
+    console.log('파일 저장 성공:', fileName, filePath, fileType);
+
+    let message = '';
+    let mimeType = '';
+
+    switch (fileType) {
+        case 'pdf':
+            message = `📄 PDF 저장 완료`;
+            mimeType = 'application/pdf';
+            break;
+        case 'csv':
+            message = `📊 Excel 저장 완료`;
+            mimeType = 'text/csv';
+            break;
+        case 'image':
+            message = `🖼️ 이미지 저장 완료`;
+            mimeType = 'image/png';
+            break;
+    }
+
+    // 공유 버튼이 있는 알림 표시
+    showSuccessNotificationWithShare(message, fileName, filePath, mimeType);
+
+    // 최근 저장 파일 정보 저장
+    window.lastSavedFile = {
+        fileName: fileName,
+        filePath: filePath,
+        fileType: fileType,
+        mimeType: mimeType,
+        savedAt: new Date().toISOString()
+    };
+};
+
+// 공유 버튼이 있는 성공 알림
+function showSuccessNotificationWithShare(message, fileName, filePath, mimeType) {
+    const notification = document.createElement('div');
+    notification.className = 'file-save-notification';
+
+    notification.innerHTML = `
+        <div class="notification-content">
+            <div class="notification-icon">✅</div>
+            <div class="notification-text">
+                <div class="notification-message">${message}</div>
+                <div class="notification-filename">${fileName}</div>
+            </div>
+        </div>
+        <div class="notification-actions">
+            <button class="notification-btn share-btn" onclick="shareFile('${filePath}', '${mimeType}')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/>
+                    <circle cx="6" cy="12" r="3"/>
+                    <circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                공유
+            </button>
+            <button class="notification-btn close-btn" onclick="closeNotification(this)">
+                닫기
+            </button>
+        </div>
+    `;
+
+    document.body.appendChild(notification);
+
+    // 애니메이션
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    // 자동 제거 타이머
+    const autoCloseTimer = setTimeout(() => {
+        if (document.body.contains(notification)) {
+            notification.classList.remove('show');
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 300);
+        }
+    }, 10000); // 10초 후 자동 제거
+
+    // 타이머 정보 저장
+    notification.dataset.timerId = autoCloseTimer;
+}
+
+// 파일 공유 함수
+function shareFile(filePath, mimeType) {
+    console.log('Sharing file:', filePath, mimeType);
+
+    if (window.Android && window.Android.shareFile) {
+        window.Android.shareFile(filePath, mimeType);
+    } else {
+        showToast('공유 기능을 사용할 수 없습니다.');
+    }
+}
+
+// 알림 닫기
+function closeNotification(button) {
+    const notification = button.closest('.file-save-notification');
+    if (notification) {
+        // 자동 제거 타이머 취소
+        const timerId = notification.dataset.timerId;
+        if (timerId) {
+            clearTimeout(parseInt(timerId));
+        }
+
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (document.body.contains(notification)) {
+                document.body.removeChild(notification);
+            }
+        }, 300);
+    }
+}
+
+// 내보내기 버튼 이벤트 업데이트 - 터치 제스처 지원
+function updateExportButtons() {
+    // PDF 버튼
+    const pdfBtn = document.querySelector('.pdf-btn');
+    if (pdfBtn) {
+        // 기본 클릭 - 저장만
+        pdfBtn.onclick = (e) => {
+            e.preventDefault();
+            generatePDFReport(false);
+        };
+
+        // 길게 누르기 감지
+        let longPressTimer;
+        let isLongPress = false;
+
+        const startLongPress = (e) => {
+            isLongPress = false;
+            longPressTimer = setTimeout(() => {
+                isLongPress = true;
+                // 진동 피드백 (지원하는 경우)
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                // 저장 후 자동 공유
+                generatePDFReport(true);
+            }, 800); // 0.8초
+        };
+
+        const cancelLongPress = () => {
+            clearTimeout(longPressTimer);
+            if (!isLongPress) {
+                // 짧은 터치는 onclick에서 처리
+            }
+        };
+
+        // 터치 이벤트
+        pdfBtn.addEventListener('touchstart', startLongPress, { passive: true });
+        pdfBtn.addEventListener('touchend', cancelLongPress);
+        pdfBtn.addEventListener('touchcancel', cancelLongPress);
+
+        // 마우스 이벤트 (데스크톱)
+        pdfBtn.addEventListener('mousedown', startLongPress);
+        pdfBtn.addEventListener('mouseup', cancelLongPress);
+        pdfBtn.addEventListener('mouseleave', cancelLongPress);
+
+        // 툴팁 추가
+        pdfBtn.title = '클릭: PDF 저장\n길게 누르기: 저장 후 공유';
+    }
+
+    // Excel 버튼
+    const excelBtn = document.querySelector('.excel-btn');
+    if (excelBtn) {
+        excelBtn.onclick = (e) => {
+            e.preventDefault();
+            exportToExcelViaAndroid(false);
+        };
+
+        // Excel 버튼도 동일한 길게 누르기 기능 추가
+        let excelLongPressTimer;
+        let isExcelLongPress = false;
+
+        const startExcelLongPress = (e) => {
+            isExcelLongPress = false;
+            excelLongPressTimer = setTimeout(() => {
+                isExcelLongPress = true;
+                if (navigator.vibrate) {
+                    navigator.vibrate(50);
+                }
+                exportToExcelViaAndroid(true);
+            }, 800);
+        };
+
+        const cancelExcelLongPress = () => {
+            clearTimeout(excelLongPressTimer);
+        };
+
+        excelBtn.addEventListener('touchstart', startExcelLongPress, { passive: true });
+        excelBtn.addEventListener('touchend', cancelExcelLongPress);
+        excelBtn.addEventListener('touchcancel', cancelExcelLongPress);
+        excelBtn.addEventListener('mousedown', startExcelLongPress);
+        excelBtn.addEventListener('mouseup', cancelExcelLongPress);
+        excelBtn.addEventListener('mouseleave', cancelExcelLongPress);
+
+        excelBtn.title = '클릭: Excel 저장\n길게 누르기: 저장 후 공유';
+    }
+}
+
+// 웹 브라우저용 직접 다운로드 함수들
+function downloadCSV(csvContent, fileName) {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+
+    if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, fileName);
+    } else {
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+}
+// 권한 체크 및 요청 예시
+function checkAndRequestPermission() {
+    if (window.Android && window.Android.hasStoragePermission) {
+        if (!window.Android.hasStoragePermission()) {
+            // 권한이 없으면 요청
+            window.Android.requestStoragePermission();
+        } else {
+            // 권한이 있으면 파일 작업 진행
+            proceedWithFileOperation();
+        }
+    } else {
+        // 웹 환경이거나 Android 인터페이스가 없는 경우
+        proceedWithFileOperation();
+    }
+}
+
+// 권한 허용 콜백
+window.onStoragePermissionGranted = function() {
+    console.log('Storage permission granted');
+    showToast('이제 파일을 저장할 수 있습니다');
+    // 대기 중이던 작업 실행
+    proceedWithFileOperation();
+};
+
+// 권한 거부 콜백
+window.onStoragePermissionDenied = function() {
+    console.log('Storage permission denied');
+    showToast('파일 저장 권한이 거부되었습니다');
+};
+
+// 전역 함수 등록
 window.generatePDFReport = generatePDFReport;
+window.exportToExcelViaAndroid = exportToExcelViaAndroid;
+window.shareFile = shareFile;
+window.closeNotification = closeNotification;
+
+
 window.onPDFButtonClick = onPDFButtonClick;
 window.exportToPDFViaAndroid = generatePDFReport; // 별칭

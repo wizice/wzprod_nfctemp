@@ -340,11 +340,13 @@ function onError(message) {
     gwzCommon.clearProgressBar();
     if ( message.indexOf("communication error") >= 0) {
             updateStatus('NFC 태그 대기중', '태그를 다시 인식시켜주세요.', '확인');
-            showToast(message || '오류가 발생했습니다');
+            //showToast(message || '오류가 발생했습니다');
+            showToast('태그를 다시 인식시켜주세요.');
     } else {
         updateStatus('오류 발생', '태그를 다시 인식시켜주세요.', '확인');
         //updateStatus('오류 발생', message || '알 수 없는 오류가 발생했습니다', 'error');
-        showToast(message || '오류가 발생했습니다');
+        //showToast(message || '오류가 발생했습니다');
+        showToast('태그를 다시 인식시켜주세요.');
     }
 
 }

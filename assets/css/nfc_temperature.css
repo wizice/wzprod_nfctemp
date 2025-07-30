@@ -1184,3 +1184,200 @@
         background: rgba(0, 0, 0, 0.3);
     }
 }
+
+/* 파일 저장 알림 스타일 */
+.file-save-notification {
+    position: fixed;
+    top: 20px;
+    right: -400px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 10002;
+    max-width: 380px;
+    transition: right 0.3s ease;
+    overflow: hidden;
+}
+
+.file-save-notification.show {
+    right: 20px;
+}
+
+.notification-content {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    gap: 12px;
+}
+
+.notification-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.notification-text {
+    flex: 1;
+}
+
+.notification-message {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.notification-filename {
+    font-size: 0.85em;
+    color: #666;
+    word-break: break-all;
+}
+
+.notification-actions {
+    display: flex;
+    border-top: 1px solid #f0f0f0;
+}
+
+.notification-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color 0.2s;
+}
+
+.notification-btn:hover {
+    background-color: #f5f5f5;
+}
+
+.share-btn {
+    color: #4CAF50;
+    font-weight: 600;
+    border-right: 1px solid #f0f0f0;
+}
+
+.close-btn {
+    color: #666;
+}
+
+/* 모바일 반응형 */
+@media (max-width: 480px) {
+    .file-save-notification {
+        right: -100%;
+        left: 10px;
+        max-width: calc(100% - 20px);
+    }
+
+    .file-save-notification.show {
+        right: 10px;
+    }
+}
+
+/* 다크모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .file-save-notification {
+        background: #2a2a2a;
+        color: white;
+    }
+
+    .notification-message {
+        color: white;
+    }
+
+    .notification-filename {
+        color: #aaa;
+    }
+
+    .notification-actions {
+        border-top-color: #444;
+    }
+
+    .notification-btn:hover {
+        background-color: #333;
+    }
+
+    .share-btn {
+        border-right-color: #444;
+    }
+}
+
+/* 버튼 길게 누르기 시각적 피드백 */
+.export-btn {
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.export-btn::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: inherit;
+    transform: scale(0);
+    transition: transform 0.8s ease;
+}
+
+.export-btn:active::after {
+    transform: scale(1);
+}
+
+/* 툴팁 스타일 */
+.export-btn[title] {
+    position: relative;
+}
+
+.export-btn[title]:hover::before {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 0.75em;
+    border-radius: 4px;
+    white-space: pre-line;
+    margin-bottom: 5px;
+    pointer-events: none;
+    opacity: 0;
+    animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
+/* 애니메이션 */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
