@@ -1204,7 +1204,7 @@
 }
 
 .notification-content {
-    display: flex;
+
     align-items: center;
     padding: 16px;
     gap: 12px;
@@ -1274,6 +1274,8 @@
 
     .file-save-notification.show {
         right: 10px;
+        top: 24rem;
+        background: #bbffff;
     }
 }
 

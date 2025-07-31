@@ -2017,7 +2017,7 @@ async function exportToExcelViaAndroid(autoShare = false) {
 
         // 데이터 행 추가
         currentData.data.forEach((item, index) => {
-            const time = formatTime(item.time || `${index * (currentData.intervalTime || 600)}초`);
+            const time = formatTimeForPdf(item.time || `${index * (currentData.intervalTime || 600)}초`);
             const temp = item.temperature.toFixed(1);
             const status = item.status || 'Normal';
 
@@ -2160,36 +2160,6 @@ async function exportAllFormatsViaAndroid() {
         alert('파일 생성 중 오류가 발생했습니다: ' + error.message);
     }
 }
-
-// 6. 파일 생성 성공/실패 콜백 (안드로이드에서 호출)
-window.onFileSaveSuccess = function(fileName, filePath, fileType) {
-    console.log('파일 저장 성공:', fileName, filePath);
-
-    let message = '';
-    switch (fileType) {
-        case 'pdf':
-            message = `📄 PDF 저장: ${fileName}`;
-            break;
-        case 'csv':
-            message = `📊 CSV 저장: ${fileName}`;
-            break;
-        case 'image':
-            message = `🖼️ 이미지 저장: ${fileName}`;
-            break;
-        default:
-            message = `📁 파일 저장: ${fileName}`;
-    }
-
-    showSuccessNotification(message);
-
-    // 파일 경로를 전역 변수에 저장 (필요시 사용)
-    window.lastSavedFile = {
-        fileName: fileName,
-        filePath: filePath,
-        fileType: fileType,
-        savedAt: new Date().toISOString()
-    };
-};
 
 window.onFileSaveFailed = function(fileName, error, fileType) {
     console.error('파일 저장 실패:', fileName, error);
@@ -2460,7 +2430,7 @@ async function generatePDFReport(autoShare = true ) {
 
         // 메타데이터 생성
         const metadata = {
-            fileName: `Temperature_Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
+            fileName: `Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
             fileSize: base64Data.length,
             mimeType: 'application/pdf',
             tagId: currentData?.uid || 'unknown',
@@ -2790,7 +2760,7 @@ async function downloadPDFDirectly() {
 
         const tagId = currentData?.uid || 'unknown';
         const date = new Date().toISOString().split('T')[0];
-        const fileName = `SC_Point_Temperature_Report_${tagId}_${date}.pdf`;
+        const fileName = `Report_${tagId}_${date}.pdf`;
 
         const opt = {
             margin: [10, 10, 10, 10],
@@ -2836,15 +2806,15 @@ window.onFileSaveSuccess = function(fileName, filePath, fileType) {
 
     switch (fileType) {
         case 'pdf':
-            message = `📄 PDF 저장 완료`;
+            message = `PDF 저장 완료`;
             mimeType = 'application/pdf';
             break;
         case 'csv':
-            message = `📊 Excel 저장 완료`;
+            message = `Excel 저장 완료`;
             mimeType = 'text/csv';
             break;
         case 'image':
-            message = `🖼️ 이미지 저장 완료`;
+            message = `이미지 저장 완료`;
             mimeType = 'image/png';
             break;
     }
@@ -2869,7 +2839,7 @@ function showSuccessNotificationWithShare(message, fileName, filePath, mimeType)
 
     notification.innerHTML = `
         <div class="notification-content">
-            <div class="notification-icon">✅</div>
+            <div class="notification-icon"></div>
             <div class="notification-text">
                 <div class="notification-message">${message}</div>
                 <div class="notification-filename">${fileName}</div>
@@ -2898,6 +2868,7 @@ function showSuccessNotificationWithShare(message, fileName, filePath, mimeType)
     setTimeout(() => {
         notification.classList.add('show');
     }, 10);
+    return false;
 
     // 자동 제거 타이머
     const autoCloseTimer = setTimeout(() => {
