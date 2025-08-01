@@ -11,7 +11,20 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('adminId').addEventListener('keypress', handleEnterKey);
     document.getElementById('adminPassword').addEventListener('keypress', handleEnterKey);
 
+
 });
+
+// 자동 로그인 체크
+function checkAutoLogin() {
+    const savedUser = sessionStorage.getItem('currentUser');
+    if (savedUser) {
+        // 이미 로그인된 상태면 대시보드로 이동
+
+        let move_url     =   "nfc_admin_main.html?ts=" + new Date().getTime() ;
+         gwzCommon.fn_move_url( move_url );
+
+    }
+}
 
 // 저장된 로그인 정보 불러오기
 function loadSavedCredentials() {
@@ -86,46 +99,55 @@ function handleLogin() {
         return;
     }
 
+    // 로딩 시작
+    isLoading = true;
     // 로딩 표시
     showLoading(true);
 
     // Android 인터페이스를 통한 Firestore 인증
     if (window.Android ) {
-        // 로그인 정보 저장 처리
-        if (rememberMe) {
-            if (window.Android.saveCredentials) {
-                window.Android.saveCredentials(adminId, adminPassword);
-            }
-        } else {
-            if (window.Android.clearSavedCredentials) {
-                window.Android.clearSavedCredentials();
-            }
-        }
-
+        //
+        // 인증이 되면 로그인 정보 저장 처리함. verifyAdminLogin 에서 rememberMe 값에 따라 저장 삭제함
         // Firestore 인증 요청
-        window.Android.verifyAdminLogin(adminId, adminPassword);
+        window.Android.verifyAdminLogin(adminId, adminPassword, rememberMe);
     }
 }
 
 // 로그인 성공 콜백 (Android에서 호출)
-window.onAdminLoginSuccess = function() {
+window.onAdminLoginSuccess = function(username, role) {
+    console.log('Admin login success:', username, role);
+
+    // 사용자 정보 저장
+    const userInfo = {
+        username: username,
+        role: role || 'admin',
+        loginTime: Date.now()
+    };
+
+    sessionStorage.setItem('currentUser', JSON.stringify(userInfo));
+
     showLoading(false);
     showToast('로그인 성공!', 'success');
 
-    // 관리자 설정 페이지로 이동
+    // 관리자   페이지로 이동
     setTimeout(() => {
         if (window.Android && window.Android.onAdminLoginSuccess) {
             window.Android.onAdminLoginSuccess();
-        } else {
-            window.location.href = 'nfc_main.html';
         }
     }, 500);
 };
 
 // 로그인 실패 콜백 (Android에서 호출)
-window.onAdminLoginFailed = function(error) {
+window.onAdminLoginFailed = function(message) {
+    console.log('Admin login failed:', message);
+    isLoading = false;
     showLoading(false);
-    showToast(error || '아이디 또는 비밀번호가 올바르지 않습니다.', 'error');
+
+    showToast(message || '아이디 또는 비밀번호가 일치하지 않습니다.', 'error');
+
+    // 비밀번호 필드 초기화
+    document.getElementById('adminPassword').value = '';
+    document.getElementById('adminPassword').focus();
 };
 
 // 비밀번호 변경 모달 표시
@@ -220,6 +242,16 @@ window.onPasswordChangeFailed = function(error) {
 function showLoading(show) {
     isLoading = show;
     document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+
+        const loginButton = document.querySelector('.login-btn');
+
+        if (show) {
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<span class="spinner-border spinner-border-sm mr-2"></span>로그인 중...';
+        } else {
+            loginButton.disabled = false;
+            loginButton.innerHTML = '로그인';
+        }
 }
 
 // 토스트 메시지 표시
@@ -256,7 +288,10 @@ window.addEventListener('click', function(event) {
 
 // 뒤로 가기
 function goBack() {
-    window.location.href = 'nfc_main.html';
+
+    let move_url     =   "nfc_main.html?ts=" + new Date().getTime() ;
+     gwzCommon.fn_move_url( move_url );
+
 }
 window.onBackPressed = function () {
     const modal = document.getElementById('changePasswordModal');

@@ -64,13 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
     $("#homeBtn").click(function(){
         gwzCommon.clear_back_url();
         let ts = new Date().getTime();
-        let move_url ="nfc_main.html?ts="+ ts;
+        let move_url ="nfc_main.html?ts="+ new Date().getTime() ;
         gwzCommon.fn_move_url( move_url );
     })
+    $("#adminMainBtn").click(function(){
+        gwzCommon.clear_back_url();
+        let ts = new Date().getTime();
+        let move_url ="nfc_admin_main.html?ts="+ new Date().getTime() ;
+        gwzCommon.fn_move_url( move_url );
+    })
+
+
     $("#adminMenuBtn").click(function(){
         gwzCommon.clear_back_url();
         let ts = new Date().getTime();
-        let move_url ="nfc_admin_login.html?ts="+ ts;
+        let move_url ="nfc_admin_login.html?ts="+ new Date().getTime() ;
         gwzCommon.fn_move_url( move_url );
     })
 

@@ -1,0 +1,19 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Home Shape with Admin Badge -->
+    <g stroke="currentColor" stroke-width="2" fill="none">
+        <!-- House Outline -->
+        <path d="M3 12 L12 3 L21 12" stroke-linejoin="round"/>
+        <path d="M5 10 L5 21 L19 21 L19 10" stroke-linejoin="round"/>
+
+        <!-- Door (Dashboard Entry) -->
+        <rect x="9" y="14" width="6" height="7" stroke-width="1.5"/>
+
+        <!-- Windows (Dashboard Panels) -->
+        <rect x="6" y="14" width="2" height="2" fill="currentColor"/>
+        <rect x="16" y="14" width="2" height="2" fill="currentColor"/>
+
+        <!-- Admin Badge with M -->
+        <circle cx="12" cy="9" r="3" fill="white" stroke-width="1.5"/>
+        <text x="12" y="10.5" font-family="Arial, sans-serif" font-size="4" font-weight="bold" fill="currentColor" text-anchor="middle">M</text>
+    </g>
+</svg>

@@ -1,0 +1,181 @@
+/* Tag management specific styles */
+.bulk-actions {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+.bulk-actions.show {
+    display: block;
+}
+
+.tag-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.tag-table th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    padding: 15px;
+}
+
+.tag-table td {
+    padding: 15px;
+    vertical-align: middle;
+}
+
+.tag-uid {
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.logging-status {
+    font-size: 0.85em;
+}
+
+.logging-active {
+    color: #28a745;
+}
+
+.logging-waiting {
+    color: #6c757d;
+}
+
+.group-badge {
+    background: #e7f3ff;
+    color: #004085;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.85em;
+}
+
+.action-dropdown {
+    position: relative;
+}
+
+.checkbox-column {
+    width: 40px;
+}
+
+.select-all-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+    .bulk-actions {
+        padding: 10px;
+    }
+
+    .bulk-actions .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .bulk-actions button {
+        font-size: 0.85em;
+    }
+
+    .filter-row {
+        flex-direction: column;
+    }
+
+    .filter-row .form-group {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .tag-table {
+        font-size: 0.85em;
+    }
+
+    .tag-table th,
+    .tag-table td {
+        padding: 8px 5px;
+    }
+
+    .tag-uid {
+        font-size: 0.8em;
+        word-break: break-all;
+    }
+
+    .status-badge,
+    .group-badge {
+        font-size: 0.75em;
+        padding: 2px 6px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .action-buttons button {
+        font-size: 0.75em;
+        padding: 3px 6px;
+    }
+
+    .checkbox-column {
+        width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .d-flex.justify-content-between > div {
+        width: 100%;
+    }
+
+    .tag-table {
+        font-size: 0.8em;
+    }
+
+    /* 모바일에서는 UID를 짧게 표시 */
+    .tag-uid {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* 페이지네이션 모바일 최적화 */
+    .pagination {
+        font-size: 0.85em;
+    }
+
+    .page-link {
+        padding: 0.25rem 0.5rem;
+    }
+}

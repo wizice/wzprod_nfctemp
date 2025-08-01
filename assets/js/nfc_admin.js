@@ -47,7 +47,9 @@ window.addEventListener('DOMContentLoaded', function() {
 // 로그아웃
 function logout() {
     if (confirm('로그아웃 하시겠습니까?')) {
-         window.location.href="nfc_admin_login.html";
+             let move_url     =   "nfc_admin_login.html?ts=" +new Date().getTime() ;
+            gwzCommon.fn_move_url( move_url );
+
     }
 }
 // 예상 종료 시점 업데이트
@@ -76,13 +78,7 @@ function checkLoginStatus() {
     isLoggedIn = true;
 }
 
-// Logout function
-function logout() {
-    if (confirm('로그아웃 하시겠습니까?')) {
-        localStorage.removeItem('adminCredentials');
-        window.location.href = 'nfc_main.html';
-    }
-}
+
 
 // Update NFC status
 function updateNfcStatus() {
@@ -245,15 +241,8 @@ function go_temparature_page() {
     // Call native method
     let ts = new Date().getTime();
     //let move_url     =   "nfc_temperature_main.html?ts=" + ts ;
-    let move_url     =   "nfc_main.html?ts=" + ts ;
-    if (window.Android && window.Android.moveUrl) {
-        window.Android.moveUrl(move_url);
-    } else {
-        // For testing - navigate to temperature page
-        setTimeout(() => {
-            window.location.href = move_url;
-       }, 500);
-    }
+    let move_url     =   "nfc_main.html?ts=" + new Date().getTime() ;
+    gwzCommon.fn_move_url( move_url );
 }
 
 // ===== Native Callbacks =====
@@ -458,15 +447,12 @@ function hideCertificationMark() {
 
 
 
-// Handle back button
-window.handleBackPress = function() {
-    // Navigate back to main
-    window.location.href = 'nfc_main.html';
-    return true;
-};
 // 뒤로 가기
 function goBack() {
-    window.location.href = 'nfc_admin_login.html';
+
+     let move_url     =   "nfc_admin_login.html?ts=" + new Date().getTime() ;
+     gwzCommon.fn_move_url( move_url );
+
 }
 window.onBackPressed = function () {
     setTimeout(function(){

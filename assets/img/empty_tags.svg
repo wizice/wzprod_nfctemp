@@ -1,0 +1,28 @@
+<svg width="240" height="240" viewBox="0 0 240 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="120" cy="120" r="100" fill="#F3F4F6" stroke="#E5E7EB" stroke-width="2"/>
+
+    <!-- NFC Tag Icon -->
+    <g transform="translate(60, 60)">
+        <!-- Tag Base -->
+        <rect x="20" y="30" width="80" height="60" rx="8" fill="#D1D5DB" stroke="#9CA3AF" stroke-width="2"/>
+
+        <!-- Tag Hole -->
+        <circle cx="35" cy="45" r="5" fill="#F3F4F6"/>
+
+        <!-- NFC Waves -->
+        <path d="M55 60 Q65 50 55 40" stroke="#6B7280" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M65 65 Q80 50 65 35" stroke="#6B7280" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M75 70 Q95 50 75 30" stroke="#6B7280" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+        <!-- Question Mark -->
+        <text x="60" y="65" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#4B5563" text-anchor="middle">?</text>
+    </g>
+
+
+    <!-- Decorative Elements -->
+    <circle cx="40" cy="40" r="3" fill="#E5E7EB"/>
+    <circle cx="200" cy="40" r="3" fill="#E5E7EB"/>
+    <circle cx="40" cy="200" r="3" fill="#E5E7EB"/>
+    <circle cx="200" cy="200" r="3" fill="#E5E7EB"/>
+</svg>

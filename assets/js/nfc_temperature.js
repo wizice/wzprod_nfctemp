@@ -711,7 +711,9 @@ function goBack() {
     if ( back_url == "") {
         back_url     = "nfc_main.html";
     }
-    window.location.href = back_url ;
+
+    let move_url     =   back_url + "?ts=" +   new Date().getTime() ;
+     gwzCommon.fn_move_url( move_url );
 }
 window.onBackPressed = function () {
     setTimeout(function(){

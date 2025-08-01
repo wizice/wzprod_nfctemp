@@ -301,7 +301,10 @@ function onTemperatureDataReceived(data) {
             localStorage.setItem('temperatureData', JSON.stringify(parsedData));
 
             // temperature 페이지로 이동
-            window.location.href = 'nfc_temperature_main.html';
+
+            let move_url     =   "nfc_temperature_main.html?ts=" + + new Date().getTime() ;
+            gwzCommon.fn_move_url( move_url );
+
         } else {
             gwzCommon.clearProgressBar();
             updateStatus('데이터 읽기 실패', '온도 데이터를 읽을 수 없습니다', 'error');
