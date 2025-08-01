@@ -32,7 +32,7 @@
     "img/reading_tag.svg": "daef5bf2ec1e79c049e50692cc497ee7",
     "img/wizice_logo_3d.png": "52a7df6a091fee7c76aabeef7b87d440",
     "js/admin_dashboard.js": "5ea4ec50c2665a94f419e33eb8b49784",
-    "js/admin_tags.js": "7ebeae1a01ecf5c675f0a3cb7a5fa868",
+    "js/admin_tags.js": "462c8babddd18502dd15291e856efae3",
     "js/admin_users.js": "731b4d810e91d462c4acd45d667ec49e",
     "js/bootstrap.bundle.min.js": "7ccd9d390d31af98110f74f842ea9b32",
     "js/chart.min.js": "7dd5ea7d2cf22a1c42b43c40093d2669",
@@ -49,7 +49,7 @@
     "js/nfc_main.js": "2828fcd831e9f4fae864d96d0fc7dd66",
     "js/nfc_temperature.js": "50917c0985d05b70e06cf495507977f3"
   },
-  "generated_at": "2025-08-01T11:07:57.779344",
+  "generated_at": "2025-08-01T11:31:48.220815",
   "total_files": 48,
   "android_min_api": 19,
   "encryption_method": "fallback"

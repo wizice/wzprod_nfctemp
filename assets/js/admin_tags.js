@@ -51,6 +51,11 @@ function loadTagsOptimized(page = 0) {
         updateFilter: $('#updateDate').val() || '',
     };
 
+    if ( !newFilters.updateFilter  || newFilters.updateFilter == '' ){
+        showToast('등록일을 입력바랍니다.', 'error');
+        return false;
+    }
+
     // 필터가 변경되면 캐시 초기화
     if (filtersChanged(newFilters)) {
         paginationState.pageCache.clear();
@@ -284,6 +289,9 @@ function initializePage() {
     // 관리 그룹 목록 로드
     loadManagementGroups();
 
+    // 등록일 설정
+    setUpateDate();
+
     // 태그 수 먼저 조회 후 목록 로드
     loadTagsWithCount();
 }
@@ -312,6 +320,16 @@ function loadManagementGroups() {
         const callbackId = 'mgmt-groups-' + Date.now();
         window.AdminManagement.getManagementGroups(callbackId);
     }
+}
+function setUpateDate() {
+    let default_date = new Date();
+
+    // 하루 전날로 설정 (24시간 = 86400000ms)
+    default_date.setDate(default_date.getDate() - 1);
+
+    let formatted = default_date.toISOString().split("T")[0];
+
+    $("#updateDate").val(formatted);
 }
 
 // 태그 목록 로드 - Count 먼저 조회하는 개선된 버전
