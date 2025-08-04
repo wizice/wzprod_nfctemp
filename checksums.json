@@ -44,12 +44,12 @@
     "js/moment.min.js": "e4dc1dcfbc376989114cf7abb138c54e",
     "js/nfc_admin.js": "f4792084ce34a6d80bda676ecd94468f",
     "js/nfc_admin_cache_management.js": "ab33c92aa2233eee446b349d9cbce8a5",
-    "js/nfc_admin_login.js": "7af3d8386e53fc03af0746dbddafac5e",
+    "js/nfc_admin_login.js": "ea43770dd8ae4da0fda702496fe7cd78",
     "js/nfc_common.js": "7d1ee6d4c59bded47f18fd1615855308",
     "js/nfc_main.js": "2828fcd831e9f4fae864d96d0fc7dd66",
     "js/nfc_temperature.js": "50917c0985d05b70e06cf495507977f3"
   },
-  "generated_at": "2025-08-01T11:31:48.220815",
+  "generated_at": "2025-08-04T10:26:44.795863",
   "total_files": 48,
   "android_min_api": 19,
   "encryption_method": "fallback"

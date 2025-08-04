@@ -26,7 +26,7 @@ function checkAutoLogin() {
     }
 }
 
-// 저장된 로그인 정보 불러오기
+// 저장된 로그인 정보 불러오기 수정
 function loadSavedCredentials() {
     try {
         // Android에서 저장된 정보 가져오기
@@ -36,21 +36,26 @@ function loadSavedCredentials() {
                 const credentials = JSON.parse(savedData);
                 if (credentials.savedId) {
                     document.getElementById('adminId').value = credentials.savedId;
-                    document.getElementById('rememberMe').checked = true;
 
-
-                    if (credentials.savedPwd) {
-                         document.getElementById('adminPassword').value = credentials.savedPwd;
-
-                     }
+                    // 비밀번호가 있는 경우에만 체크박스 활성화
+                    if (credentials.savedPwd && credentials.savedPwd.length > 0) {
+                        document.getElementById('rememberMe').checked = true;
+                        document.getElementById('adminPassword').value = credentials.savedPwd;
+                    } else {
+                        // 비밀번호가 없으면 체크박스 해제
+                        document.getElementById('rememberMe').checked = false;
+                    }
                 }
             }
         }
     } catch (error) {
         console.error('Failed to load saved credentials:', error);
+        // 오류 발생 시 저장된 정보 초기화
+        if (window.Android && window.Android.clearSavedCredentials) {
+            window.Android.clearSavedCredentials();
+        }
     }
 }
-
 // 엔터키 처리
 function handleEnterKey(event) {
     if (event.key === 'Enter') {
@@ -78,7 +83,7 @@ function togglePassword() {
     }
 }
 
-// 로그인 처리
+// 로그인 처리 수정 - 저장 시점 확인
 function handleLogin() {
     if (isLoading) return;
 
@@ -101,17 +106,15 @@ function handleLogin() {
 
     // 로딩 시작
     isLoading = true;
-    // 로딩 표시
     showLoading(true);
 
     // Android 인터페이스를 통한 Firestore 인증
-    if (window.Android ) {
-        //
-        // 인증이 되면 로그인 정보 저장 처리함. verifyAdminLogin 에서 rememberMe 값에 따라 저장 삭제함
-        // Firestore 인증 요청
+    if (window.Android) {
+        // verifyAdminLogin에서 rememberMe 값에 따라 저장/삭제 처리
         window.Android.verifyAdminLogin(adminId, adminPassword, rememberMe);
     }
 }
+
 
 // 로그인 성공 콜백 (Android에서 호출)
 window.onAdminLoginSuccess = function(username, role) {
@@ -225,10 +228,30 @@ function handleChangePassword() {
     }
 }
 
-// 비밀번호 변경 성공 콜백 (Android에서 호출)
+
+// 비밀번호 변경 성공 콜백 수정
 window.onPasswordChangeSuccess = function() {
     showLoading(false);
     showToast('비밀번호가 성공적으로 변경되었습니다.', 'success');
+
+    // 중요: 비밀번호 변경 후 저장된 정보 처리
+    const currentId = document.getElementById('currentId').value.trim();
+    const savedId = document.getElementById('adminId').value.trim();
+
+    // 변경한 계정이 현재 저장된 계정과 같은 경우
+    if (currentId === savedId && window.Android && window.Android.clearSavedCredentials) {
+        // 저장된 비밀번호 정보만 삭제 (아이디는 유지)
+        window.Android.clearSavedCredentials();
+
+        // UI 업데이트
+        document.getElementById('rememberMe').checked = false;
+        document.getElementById('adminPassword').value = '';
+        // 아이디는 유지
+        document.getElementById('adminId').value = savedId;
+
+        showToast('비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.', 'info');
+    }
+
     closeChangePassword();
 };
 
