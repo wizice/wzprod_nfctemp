@@ -156,9 +156,11 @@
 
         <!-- 페이지네이션 (선택적) -->
         <div class="pagination" id="tablePagination" style="display: none;">
+            <button id="firstPageBtn" onclick="goToFirstPage()">처음</button>
             <button id="prevPageBtn" onclick="changePage(-1)">이전</button>
             <span id="pageInfo">1 / 1</span>
             <button id="nextPageBtn" onclick="changePage(1)">다음</button>
+            <button id="lastPageBtn" onclick="goToLastPage()">끝</button>
         </div>
 
 

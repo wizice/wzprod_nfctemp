@@ -343,14 +343,21 @@ window.onSettingsRead = function(info) {
     } else if ( info.measurementStatus == "1" ) { //
         updateStatus('태그 측정중', '현재 측정중입니다. 온도기록 중지후 변경가능합니다. ', 'warning');
         showStatus("processing")
-    } else if ( info.measurementStatus == "3" ) { //
-        updateStatus('측정완료상태', '데이터를 확인 후 설정을 변경바랍니다.', 'success');
-        showStatus("done")
-    }else if ( info.measurementStatus == "2" ) { //
+    } else if (info.measurementStatus == "3") {
+        // measurementStatus가 "3"이면서 currentCount가 0 또는 1인 경우 태그 준비됨 상태로 처리
+        if (info.currentCount === 0 || info.currentCount === 1 || 
+            info.currentCount === "0" || info.currentCount === "1") {
+            updateStatus('태그 준비됨', '설정을 변경할 수 있습니다', 'success');
+            showStatus("ready");
+        } else {
+            updateStatus('측정완료상태', '데이터를 확인 후 설정을 변경바랍니다.', 'success');
+            showStatus("done");
+        }
+    } else if (info.measurementStatus == "2") {
         updateStatus('태그 비정상', '비정상 종료된 상태입니다.', 'warning');
         showStatus("error")
     }else{
-        updateStatus('태그 비정상', '알수 없느 상태입니다.[' + info.measurementStatus+"]", 'error');
+        updateStatus('태그 비정상', '알 수 없는 상태입니다.[' + info.measurementStatus+"]", 'error');
         showStatus("error")
     }
 

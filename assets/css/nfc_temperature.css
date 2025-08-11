@@ -435,6 +435,32 @@
     border: 1px solid #e0e0e0;
     max-height: 400px;
     overflow-y: auto;
+    /* 스크롤바 스타일링 추가 */
+    scrollbar-width: thin;
+    scrollbar-color: #667eea #f1f1f1;
+}
+.data-table-wrapper::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+.data-table-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.data-table-wrapper::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 6px;
+    border: 2px solid #f1f1f1;
+}
+
+.data-table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #5a6fd8;
+}
+
+.data-table-wrapper::-webkit-scrollbar-corner {
+    background: #f1f1f1;
 }
 
 .temperature-data-table {
@@ -492,7 +518,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
     margin-top: 15px;
     padding: 10px;
 }
@@ -504,15 +530,20 @@
     border-radius: 4px;
     cursor: pointer;
     font-size: 0.85em;
+    min-width: 50px; /* 추가 */
+    transition: all 0.2s ease; /* 추가 */
 }
 
 .pagination button:hover:not(:disabled) {
-    background: #f0f0f0;
+    background: #667eea; /* 기존 #f0f0f0에서 변경 */
+    color: white; /* 추가 */
+    border-color: #667eea; /* 추가 */
 }
 
 .pagination button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: #f5f5f5; /* 추가 */
 }
 
 #pageInfo {
@@ -520,6 +551,7 @@
     color: #666;
     min-width: 60px;
     text-align: center;
+    margin: 0 5px; /* 추가 */
 }
 
 /* 반응형 */

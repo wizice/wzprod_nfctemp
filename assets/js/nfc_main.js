@@ -33,9 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //-- 관리자 모드이면 태그 데이터 바로 읽기
     let currentTagUid = gwzCommon.get_back_url();
-    if ( currentTagUid) {
-        onTagAuthenticated(currentTagUid);
-    }
+    //if ( currentTagUid) {
+    //    onTagAuthenticated(currentTagUid);
+    //}
 
 
 });
