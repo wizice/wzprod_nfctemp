@@ -24,13 +24,16 @@ async function initializeWasmAuth() {
         const script = document.createElement('script');
         script.type = 'module';
         script.textContent = `
-            import init, { WasmAuth } from './wasm/nfc_auth_wasm.js';
+            import init, { NfcAuthenticator } from './wasm/nfc_auth_wasm.js';
             
             window.initWasmModule = async function() {
                 try {
                     // WASM 초기화 - 상대 경로 사용
                     await init('./wasm/nfc_auth_wasm_bg.wasm');
-                    return new WasmAuth();
+                    // NfcAuthenticator 인스턴스 생성 (constructor 필요)
+                    const encryptionKey = '${ENCRYPTION_KEY}';
+                    const apiEndpoint = '${FIREBASE_FUNCTIONS_URL}';
+                    return new NfcAuthenticator(encryptionKey, apiEndpoint);
                 } catch (error) {
                     console.error('WASM init error:', error);
                     throw error;

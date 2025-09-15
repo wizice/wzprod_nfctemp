@@ -50,14 +50,14 @@
     "js/nfc_common.js": "485ea3ffe55c742b04b967ff7e4d02ed",
     "js/nfc_main.js": "c7d7b8b48c61e0082dab1b58728299ea",
     "js/nfc_temperature.js": "7d313db032c7c0ced377fb60d5e9813b",
-    "js/wasm_auth_loader.js": "f5bd813240ef3fdfb73e4b91d926f66b",
+    "js/wasm_auth_loader.js": "631d64d4542c4c2c25c8b61f97fefcac",
     "wasm/nfc_auth_wasm.d.ts": "f8da61a0eb2bf6dd7436bc5b8f773144",
     "wasm/nfc_auth_wasm.js": "f5f729f6a62a4c8dca5ec1d507315929",
     "wasm/nfc_auth_wasm_bg.wasm": "74c04af9705ec2406135512361ee5030",
     "wasm/nfc_auth_wasm_bg.wasm.d.ts": "a7e47dd87348ab6e31ffeb7268837056",
     "wasm/package.json": "b8b73f92693c2129ddff9428e432d4de"
   },
-  "generated_at": "2025-09-16T00:00:39.307616",
+  "generated_at": "2025-09-16T00:21:37.132826",
   "total_files": 56,
   "android_min_api": 19,
   "encryption_method": "fallback"
