@@ -57,7 +57,7 @@
     "wasm/nfc_auth_wasm_bg.wasm.d.ts": "a7e47dd87348ab6e31ffeb7268837056",
     "wasm/package.json": "b8b73f92693c2129ddff9428e432d4de"
   },
-  "generated_at": "2025-09-16T01:41:53.462594",
+  "generated_at": "2025-09-16T01:50:05.256437",
   "total_files": 56,
   "android_min_api": 19,
   "encryption_method": "fallback"
