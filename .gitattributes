@@ -1,5 +1,16 @@
-# 모든 텍스트 파일을 LF로 통일
-* text=auto eol=lf
+# 기본 설정 - 자동 감지 비활성화
+* -text
+
+# 텍스트 파일 명시 (LF 유지)
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+
+# CSS/JS/SVG는 그대로 유지 (변경 없이)
+*.css -text
+*.js -text
+*.svg -text
 
 # 바이너리 파일 명시
 *.png binary
@@ -8,6 +19,8 @@
 *.gif binary
 *.ico binary
 *.enc binary
+*.wasm binary
+*.ttf binary
 
 # JavaScript 암호화 파일
 *.js.enc binary
