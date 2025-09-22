@@ -221,11 +221,11 @@ window.displayTemperatureData = function(data) {
     }
     drawChart(chartData);
 
-    // 측정 정보 표시 (기존)
-    updateMeasurementInfo(data.settings );
-
     // 요약 정보 업데이트 (최고/최저 온도 등)
     updateSummary(data);
+
+    // 측정 정보 표시 (설정 정보)
+    updateMeasurementInfo(data.settings);
 
     // 데이터 테이블 업데이트 - 파싱된 데이터 사용
     updateDataTable(chartData);
@@ -307,6 +307,12 @@ window.onSaveComplete = function(success, saved, total) {
 window.onError = function(message) {
     console.error('Error from native:', message);
     hideLoading();
+    
+    // 증분 읽기 시간초과는 console에만 표시
+    if (message && message.includes('시간 초과')) {
+        console.error('증분 읽기 시간초과:', message);
+        return;
+    }
     
     // NFC 통신 오류 처리
     if (message && message.includes('NFC communication error')) {
