@@ -2,13 +2,9 @@
  * WASM 인증 모듈 로더
  */
 
-// 전역 변수 중복 선언 방지
-if (typeof wasmModule === 'undefined') {
-    window.wasmModule = null;
-}
-if (typeof authenticator === 'undefined') {
-    window.authenticator = null;
-}
+let wasmModule = null;
+let authenticator = null;
+let isWasmInitialized = false;
 
 // Firebase Functions 엔드포인트
 // 프로덕션: 'https://us-central1-nfctemperatureapp.cloudfunctions.net/verifyTagAuthenticity'
@@ -16,41 +12,120 @@ if (typeof authenticator === 'undefined') {
 const FIREBASE_FUNCTIONS_URL = 'https://us-central1-nfctemperatureapp.cloudfunctions.net/verifyTagAuthenticity';
 
 // 암호화 키 (실제 배포 시 안전하게 관리)
-const ENCRYPTION_KEY = 'ATBVo4sIj_ZAZpo2aHUFJLYeoCQVUshCGVvrhVS9MQ4=';
+// Base64URL을 표준 Base64로 변환 (_ -> /, - -> +)
+const ENCRYPTION_KEY = 'ATBVo4sIj/ZAZpo2aHUFJLYeoCQVUshCGVvrhVS9MQ4=';
+
+/**
+ * WASM 파일을 Base64로 로드
+ */
+async function loadWasmAsBase64(url) {
+    return new Promise((resolve, reject) => {
+        try {
+            // Android WebView에서는 XMLHttpRequest 사용
+            if (window.AndroidNfc || url.startsWith('file://')) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.responseType = 'arraybuffer';
+                
+                xhr.onload = function() {
+                    if (xhr.status === 200 || xhr.status === 0) {
+                        const bytes = new Uint8Array(xhr.response);
+                        let binary = '';
+                        for (let i = 0; i < bytes.byteLength; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        resolve(btoa(binary));
+                    } else {
+                        reject(new Error('Failed to load WASM: ' + xhr.status));
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    reject(new Error('XHR failed to load WASM'));
+                };
+                
+                xhr.send();
+            } else {
+                // 일반 브라우저에서는 fetch 사용
+                fetch(url)
+                    .then(response => response.arrayBuffer())
+                    .then(buffer => {
+                        const bytes = new Uint8Array(buffer);
+                        let binary = '';
+                        for (let i = 0; i < bytes.byteLength; i++) {
+                            binary += String.fromCharCode(bytes[i]);
+                        }
+                        resolve(btoa(binary));
+                    })
+                    .catch(reject);
+            }
+        } catch (error) {
+            console.error('Failed to load WASM as Base64:', error);
+            reject(error);
+        }
+    });
+}
+
+/**
+ * Base64에서 WASM 모듈 초기화
+ */
+async function initFromBase64(base64) {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i);
+    }
+    return WebAssembly.instantiate(bytes.buffer);
+}
 
 /**
  * WASM 모듈 초기화
  */
 async function initializeWasmAuth() {
-    // 이미 초기화되었는지 확인
-    if (window.wasmModule) {
-        console.log('WASM module already initialized');
-        return true;
-    }
-    
     try {
+        // 이미 초기화된 경우 재초기화 방지
+        if (isWasmInitialized) {
+            console.log('WASM already initialized');
+            return true;
+        }
+        
         console.log('Initializing WASM authentication module...');
         
-        // WASM 모듈을 동적으로 로드 - GitHub에서 직접 로드하여 file:// 프로토콜 문제 해결
+        // WASM 파일이 존재하는지 먼저 체크
+        try {
+            // WASM 파일을 Base64로 로드
+            const wasmBase64 = await loadWasmAsBase64('file:///android_asset/wasm/nfc_auth_wasm_bg.wasm');
+            console.log('WASM loaded as Base64, length:', wasmBase64 ? wasmBase64.length : 0);
+            
+            if (!wasmBase64) {
+                throw new Error('WASM file could not be loaded');
+            }
+        
+        // WASM 모듈을 동적으로 로드
         const script = document.createElement('script');
         script.type = 'module';
         script.textContent = `
-            import init, { NfcAuthenticator } from './wasm/nfc_auth_wasm.js';
+            import init, { NfcAuthenticator } from 'file:///android_asset/wasm/nfc_auth_wasm.js';
             
-            window.initWasmModule = async function() {
+            window.initWasmModule = async function(wasmBase64) {
                 try {
-                    // GitHub에서 WASM 파일 직접 로드 (file:// 프로토콜 우회)
-                    const wasmUrl = 'https://raw.githubusercontent.com/wizice/wzprod_nfctemp/develop/assets/wasm/nfc_auth_wasm_bg.wasm';
-                    await init(wasmUrl);
+                    // Base64를 ArrayBuffer로 변환
+                    const binary = atob(wasmBase64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) {
+                        bytes[i] = binary.charCodeAt(i);
+                    }
                     
-                    // NfcAuthenticator 인스턴스 생성
+                    // WASM 초기화 - ArrayBuffer 사용
+                    await init(bytes.buffer);
+                    
+                    // NfcAuthenticator 인스턴스 생성 (constructor 필요)
                     const encryptionKey = '${ENCRYPTION_KEY}';
                     const apiEndpoint = '${FIREBASE_FUNCTIONS_URL}';
                     return new NfcAuthenticator(encryptionKey, apiEndpoint);
                 } catch (error) {
                     console.error('WASM init error:', error);
-                    // WASM 로드 실패 시 null 반환 (fallback 처리)
-                    return null;
+                    throw error;
                 }
             };
         `;
@@ -61,16 +136,17 @@ async function initializeWasmAuth() {
         
         if (window.initWasmModule) {
             try {
-                window.authenticator = await window.initWasmModule();
-                if (window.authenticator) {
-                    window.wasmModule = window.authenticator;
-                    console.log('WASM module loaded successfully');
-                } else {
-                    console.log('WASM module not available, using fallback mode');
-                    return false;
-                }
+                authenticator = await window.initWasmModule(wasmBase64);
+                wasmModule = authenticator;
+                isWasmInitialized = true;
+                console.log('WASM module loaded successfully');
+                
+                // 전역 객체로 authenticator 노출
+                window.authenticator = authenticator;
             } catch (error) {
                 console.error('WASM initialization failed:', error);
+                // WASM 로드 실패 시 대체 처리
+                isWasmInitialized = false;
                 return false;
             }
         } else {
@@ -79,9 +155,34 @@ async function initializeWasmAuth() {
         }
         
         console.log('WASM authentication module initialized successfully');
+        
+        // Android WebView 콜백 호출
+        if (typeof WasmCallback !== 'undefined' && WasmCallback.onInitialized) {
+            console.log('Calling WasmCallback.onInitialized(true)');
+            WasmCallback.onInitialized(true);
+        } else {
+            console.warn('WasmCallback not available');
+        }
+        
         return true;
+        } catch (wasmError) {
+            console.warn('WASM file not found or could not be loaded:', wasmError);
+            console.log('WASM authentication will be disabled');
+            isWasmInitialized = false;
+            
+            // Android WebView 콜백 호출 (실패)
+            if (typeof WasmCallback !== 'undefined' && WasmCallback.onInitialized) {
+                console.log('Calling WasmCallback.onInitialized(false)');
+                WasmCallback.onInitialized(false);
+            } else {
+                console.warn('WasmCallback not available (failed case)');
+            }
+            
+            return false;
+        }
     } catch (error) {
         console.error('Failed to initialize WASM:', error);
+        isWasmInitialized = false;
         return false;
     }
 }
@@ -94,7 +195,7 @@ async function initializeWasmAuth() {
  */
 async function authenticateTagWithWasm(uid) {
     try {
-        if (!window.authenticator) {
+        if (!authenticator) {
             console.log('WASM not initialized, initializing now...');
             const initialized = await initializeWasmAuth();
             if (!initialized) {
@@ -105,7 +206,7 @@ async function authenticateTagWithWasm(uid) {
         console.log('Authenticating tag with WASM:', uid);
         
         // WasmAuth의 encrypt_uid 메서드 직접 호출
-        const encryptedUuid = window.authenticator.encrypt_uid(uid);
+        const encryptedUuid = authenticator.encrypt_uid(uid);
         
         console.log('Encrypted UUID:', encryptedUuid);
         
@@ -179,8 +280,18 @@ async function fallbackAuthentication(uid) {
 window.authenticateNfcTag = authenticateTagWithWasm;
 window.initializeWasmAuth = initializeWasmAuth;
 
-// 페이지 로드 시 자동 초기화
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Page loaded, initializing WASM...');
-    initializeWasmAuth();
-});
+// 페이지 로드 시 자동 초기화 - 지연 실행
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            console.log('Page loaded, initializing WASM after delay...');
+            initializeWasmAuth();
+        }, 1000); // 1초 후 초기화
+    });
+} else {
+    // 이미 로드된 경우
+    setTimeout(() => {
+        console.log('Document already loaded, initializing WASM...');
+        initializeWasmAuth();
+    }, 1000);
+}

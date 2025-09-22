@@ -5,11 +5,127 @@ let app = {
     isScanning: false,
     isModalOpen: false,
     currentTagUid: null,
-    checkInterval: null
+    checkInterval: null,
+    hasNavigated: false
 };
 
 let currentTagUid = null;
 let currentTagData = null;
+
+// 측정 건수 기반 예상 시간 계산
+function calculateEstimatedTime(measurementCount) {
+    if (!measurementCount || measurementCount <= 0) {
+        return 1000; // 첫 번째 초기화 기본값: 1초
+    }
+    
+    // 두 번째 초기화 기본값: 2초
+    return 2000;
+}
+
+// 스마트 프로그레스 바 초기화
+function initializeSmartProgressBar(measurementCount) {
+
+    // 기존 타이머가 있다면 정리
+    if (gwzCommon.timer_progressbar) {
+        clearInterval(gwzCommon.timer_progressbar);
+        gwzCommon.timer_progressbar = null;
+    }
+    // 프로그레스 바를 0%로 초기화하고 표시
+    $('#progress-container').removeClass("hide");
+    $('#progress-bar').css('width', '0%').text('0%');
+
+    const estimatedTime = calculateEstimatedTime(measurementCount);
+    console.log(`Smart progress bar initialized: ${measurementCount} measurements, estimated ${estimatedTime}ms`);
+    
+    // setTimeout으로 부드러운 진행바 표시 (nfc_main에서는 빠르게)
+    let progress = 0;
+    const updateInterval = 50; // nfc_main에서는 50ms 간격으로 더 빠르게 진행
+    
+    gwzCommon.timer_progressbar = setInterval(() => {
+        progress += 20; // 20%씩 증가로 빠르게
+        if (progress <= 90) { // 90%까지 자동 진행
+            $('#progress-bar').css('width', progress + '%').text(progress + '%');
+        }
+    }, updateInterval);
+}
+
+// 온도 데이터 읽기 완료 콜백 (간단한 완료 알림)
+function onTemperatureDataComplete() {
+    console.log('Temperature data reading completed');
+    
+    // 기존 타이머 정리
+    if (gwzCommon.timer_progressbar) {
+        clearInterval(gwzCommon.timer_progressbar);
+        gwzCommon.timer_progressbar = null;
+    }
+    
+    // 프로그레스 바를 100%로 설정
+    $('#progress-bar').css('width', '100%').text('100%');
+    
+    // 최소 2초 대기 보장
+    const startTime = localStorage.getItem('dataReadStartTime');
+    const currentTime = new Date().getTime();
+    const elapsedTime = startTime ? (currentTime - parseInt(startTime)) : 0;
+    const minWaitTime = 2000;
+    const remainingWaitTime = Math.max(0, minWaitTime - elapsedTime);
+    
+    setTimeout(() => {
+        if (!app.hasNavigated) {
+            gwzCommon.clearProgressBar();
+            
+            // temperature 페이지로 이동
+            const uid = localStorage.getItem('currentTagUid');
+            if (uid) {
+                let move_url = "nfc_temperature_main.html?fromNFC=true&uid=" + uid + "&ts=" + new Date().getTime();
+                gwzCommon.fn_move_url(move_url);
+                app.hasNavigated = true;
+            }
+        }
+    }, remainingWaitTime + 500); // 프로그레스 바 숨기기 위한 추가 0.5초
+}
+
+// NFC 데이터 저장 진행률 업데이트 콜백 (호환성 유지)
+function onSaveProgress(progress, savedCount, totalCount) {
+    console.log(`NFC Save Progress: ${progress}% (${savedCount}/${totalCount})`);
+    
+    // onReadProgress가 이미 처리했으면 저장 진행률은 무시
+    if (app.hasNavigated) {
+        return;
+    }
+    
+    // 읽기 진행률이 없는 경우에만 저장 진행률로 프로그레스 바 업데이트
+    const progressBar = $('#progress-bar');
+    if (progressBar.length > 0) {
+        const roundedProgress = Math.round(progress);
+        progressBar.css('width', roundedProgress + '%')
+                  .text(roundedProgress + '%');
+    }
+    
+    // 100% 완료되면 최소 2초 대기 후 temperature 페이지로 이동
+    if (progress >= 100) {
+        const startTime = localStorage.getItem('dataReadStartTime');
+        const currentTime = new Date().getTime();
+        const elapsedTime = startTime ? (currentTime - parseInt(startTime)) : 0;
+        
+        // 최소 2초 대기 보장
+        const minWaitTime = 2000;
+        const remainingWaitTime = Math.max(0, minWaitTime - elapsedTime);
+        
+        setTimeout(() => {
+            if (!app.hasNavigated) {
+                gwzCommon.clearProgressBar();
+                
+                // temperature 페이지로 이동
+                const uid = localStorage.getItem('currentTagUid');
+                if (uid) {
+                    let move_url = "nfc_temperature_main.html?fromNFC=true&uid=" + uid + "&ts=" + new Date().getTime();
+                    gwzCommon.fn_move_url(move_url);
+                    app.hasNavigated = true;
+                }
+            }
+        }, remainingWaitTime + 500); // 프로그레스 바 숨기기 위한 추가 0.5초
+    }
+}
 
 // Page load initialization
 document.addEventListener('DOMContentLoaded', function() {
@@ -19,9 +135,12 @@ document.addEventListener('DOMContentLoaded', function() {
     window.onNfcTagDetected = onNfcTagDetected;
     window.onTagAuthenticated = onTagAuthenticated;
     window.onTagNotAuthenticated = onTagNotAuthenticated;
+    window.onSettingsRead = onSettingsRead;
     window.onTemperatureDataReceived = onTemperatureDataReceived;
     window.showLoading = showLoading;
     window.hideLoading = hideLoading;
+    window.onTemperatureDataComplete = onTemperatureDataComplete;
+    window.onSaveProgress = onSaveProgress;
 
     initializeNfcStatus();
 
@@ -33,9 +152,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //-- 관리자 모드이면 태그 데이터 바로 읽기
     let currentTagUid = gwzCommon.get_back_url();
-    //if ( currentTagUid) {
-    //    onTagAuthenticated(currentTagUid);
-    //}
+    if ( currentTagUid) {
+        onTagAuthenticated(currentTagUid);
+    }
 
 
 });
@@ -223,29 +342,41 @@ function onTagAuthenticated(uid) {
     console.log('Tag authenticated:', uid);
 
     app.isScanning = false;
+    app.hasNavigated = false; // 새로운 태그 인증 시 플래그 리셋
     showCertificationMark();
-    updateStatus('정품 확인됨', '데이터를 읽는중입니다.\n잠시만 태그를 움직이지 말고 기다려 주세요.', 'success');
+    updateStatus('정품 확인됨', '설정 정보 확인 중...\n잠시만 태그를 움직이지 말고 기다려 주세요.', 'success');
     $("#nfcIcon").addClass("hide");
     $("#nfcReading").removeClass("hide");
     $("#nfcInvalid").addClass("hide");
 
-
-    gwzCommon.startProgressBar(2500);
+    // 스마트 프로그레스 바 초기화 (측정 건수 미확인 시 기본값 사용)
+    initializeSmartProgressBar(null);
+    
+    // 전역으로 초기화 함수 노출
+    window.initializeSmartProgressBar = initializeSmartProgressBar;
 
     // 로딩 표시
-    showLoading('온도 데이터를 읽고 있습니다...');
+    //showLoading('온도 데이터를 읽고 있습니다...');
+    
+    // UID 저장 (temperature 페이지에서 사용)
+    localStorage.setItem('currentTagUid', uid);
+    localStorage.setItem('dataReadStartTime', new Date().getTime());
 
-    // 온도 데이터 읽기 시작
+    // 실제 NFC 데이터 읽기 완료 시까지 대기 후 이동
+    // onSaveProgress에서 100% 완료 시 페이지 이동 처리
+    
+    // 기록건수가 확인되지 않는 경우 기본 0.3초 후 이동 (fallback)
     setTimeout(() => {
-        if (window.Android && window.Android.readTemperatureData) {
-            console.log('Calling native readTemperatureData');
-            window.Android.readTemperatureData(uid);
-        } else {
-            //
-            console.log('앱에서 실행해 주세요.');
-
+        // onSaveProgress로 이미 이동했다면 실행하지 않음
+        if (!app.hasNavigated) {
+            console.log('No progress data received - using default 2 second wait');
+            gwzCommon.clearProgressBar();
+            
+            let move_url = "nfc_temperature_main.html?fromNFC=true&uid=" + uid + "&ts=" + new Date().getTime();
+            gwzCommon.fn_move_url(move_url);
+            app.hasNavigated = true;
         }
-    }, 1500);
+    }, 300);
 }
 
 
@@ -279,6 +410,14 @@ function onTagNotAuthenticated(uid ) {
     showToast('등록되지 않은 태그가 인식되었습니다. 정품 태그를 사용해 주세요.');
 }
 
+// 설정 정보 읽기 완료 콜백
+function onSettingsRead(settings) {
+    console.log('Settings read completed:', settings);
+    
+    // 온도 데이터 읽기 시작 메시지로 변경
+    updateStatus('설정 확인중', '온도 데이터를 읽는중입니다.\n잠시만 태그를 움직이지 말고 기다려 주세요.', 'success');
+}
+
 // 온도 데이터 수신 콜백 - 새로 추가
 function onTemperatureDataReceived(data) {
     console.log('Temperature data received:', data);
@@ -299,10 +438,17 @@ function onTemperatureDataReceived(data) {
         if (parsedData && parsedData.status === 'success') {
             // localStorage에 데이터 저장
             localStorage.setItem('temperatureData', JSON.stringify(parsedData));
+            
+            // uid와 startTimestamp도 저장 (캐시 데이터 조회용)
+            if (parsedData.uid) {
+                localStorage.setItem('currentTagUid', parsedData.uid);
+            }
+            if (parsedData.settings && parsedData.settings.startTime) {
+                localStorage.setItem('currentStartTimestamp', parsedData.settings.startTime);
+            }
 
-            // temperature 페이지로 이동
-
-            let move_url     =   "nfc_temperature_main.html?ts=" + + new Date().getTime() ;
+            // temperature 페이지로 이동 (NFC에서 왔다는 파라미터 추가)
+            let move_url     =   "nfc_temperature_main.html?fromNFC=true&ts=" + new Date().getTime() ;
             gwzCommon.fn_move_url( move_url );
 
         } else {
@@ -365,8 +511,8 @@ function goToAdminSettings() {
 
 
 // 전역 함수로 등록
-
-
 window.onAdminLoginSuccess = onAdminLoginSuccess;
 window.onAdminLoginFailed = onAdminLoginFailed;
 window.onError = onError;
+window.onTemperatureDataComplete = onTemperatureDataComplete;
+window.onSaveProgress = onSaveProgress;

@@ -850,6 +850,7 @@ function formatDate(date) {
 
 // 로딩 표시
 function showLoading(show) {
+    return false ;
     if (show) {
         $('#loadingOverlay').show();
         $('#tagTableBody').css('opacity', '0.5');

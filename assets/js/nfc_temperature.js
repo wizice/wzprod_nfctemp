@@ -20,10 +20,10 @@ let gReadData = {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Temperature page loaded');
 
+    // 전역 함수들은 파일 하단에서 정의됨
+
     // 기본 모드를 설정범위로 설정
     changeChartMode('range');
-
-
 
     // localStorage에서 데이터 확인
     const savedData = localStorage.getItem('temperatureData');
@@ -38,17 +38,164 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Failed to parse saved data:', e);
         }
     } else {
-        // 데이터가 없으면 안내 메시지
-        showEmptyState();
+        // URL 파라미터에서 NFC에서 온 것인지 확인
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromNFC = urlParams.get('fromNFC');
+        const uid = urlParams.get('uid');
+        
+        if (fromNFC === 'true' && uid) {
+            // NFC에서 온 경우 스마트 진행바 시작 (측정값 미확인 시 기본값)
+            initializeSmartProgressBar(null);
+            showLoadingState();
+            
+            // Native 코드에 온도 데이터 요청
+            if (window.Android && window.Android.readTemperatureData) {
+                console.log('Requesting temperature data for UID:', uid);
+                window.Android.readTemperatureData(uid);
+            }
+        } else if (fromNFC === 'true') {
+            // UID 없이 fromNFC만 있는 경우 (이전 버전 호환)
+            const storedUid = localStorage.getItem('currentTagUid');
+            if (storedUid) {
+                initializeSmartProgressBar(null);
+                showLoadingState();
+                if (window.Android && window.Android.readTemperatureData) {
+                    console.log('Requesting temperature data for stored UID:', storedUid);
+                    window.Android.readTemperatureData(storedUid);
+                }
+            } else {
+                showEmptyState();
+            }
+        } else {
+            // 그 외의 경우 빈 상태 메시지
+            showEmptyState();
+        }
     }
-
-
 });
 
+// 스마트 진행바 관련 함수들 (nfc_main.js에서 복사)
+let progressTimer = null;
+
+// 측정 건수 기반 예상 시간 계산 (4864 measurements = ~12초 기준으로 더 길게)
+function calculateEstimatedTime(measurementCount) {
+    if (!measurementCount || measurementCount <= 0) {
+        return 5000; // 기본 5초로 증가
+    }
+    
+    // 4864 measurements = 12000ms 기준으로 비례 계산 (2배 증가)
+    const baseTime = (measurementCount / 4864) * 12000;
+    
+    // 최소 5초, 최대 20초로 제한하고 넉넉하게
+    const estimatedTime = Math.max(5000, Math.min(20000, baseTime * 1.5));
+    return Math.round(estimatedTime);
+}
+
+// 스마트 프로그레스 바 초기화
+function initializeSmartProgressBar(measurementCount) {
+    // NFC 진행바 카드 표시
+    $('#nfcProgressCard').show();
+    
+    // 프로그레스 바를 0%로 초기화하고 표시
+    $('#progress-container').removeClass("hide");
+    $('#progress-bar').css('width', '0%').text('0%');
+    
+    // 기존 타이머가 있다면 정리
+    if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+    }
+    
+    const estimatedTime = calculateEstimatedTime(measurementCount);
+    console.log(`Temperature page smart progress bar initialized: ${measurementCount} measurements, estimated ${estimatedTime}ms`);
+    
+    // setTimeout으로 부드러운 진행바 표시
+    let progress = 0;
+    const updateInterval = Math.max(50, estimatedTime / 100); // 100단계로 나누되 최소 50ms 간격
+    
+    progressTimer = setInterval(() => {
+        progress += 50;
+        if (progress <= 95) { // 95%까지만 자동 진행
+            $('#progress-bar').css('width', progress + '%').text(progress + '%');
+        }
+    }, updateInterval);
+}
+
+// 측정 갯수 기반 스마트 프로그레스 바 초기화 (5%씩 천천히 진행)
+function initializeDataProgressBar(measurementCount) {
+    // NFC 진행바 카드 표시
+    $('#nfcProgressCard').show();
+    
+    // 프로그레스 바를 0%로 초기화하고 표시
+    $('#progress-container').removeClass("hide");
+    $('#progress-bar').css('width', '0%').text('0%');
+    
+    // 기존 타이머가 있다면 정리
+    if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+    }
+    
+    const estimatedTime = calculateEstimatedTime(measurementCount);
+    console.log(`Data progress bar initialized: ${measurementCount} measurements, estimated ${estimatedTime}ms`);
+    
+    // 측정 갯수가 있을 때는 5%씩 천천히 진행
+    let progress = 0;
+    const updateInterval = Math.max(100, estimatedTime / 100); // 더 천천히 진행
+    
+    progressTimer = setInterval(() => {
+        progress += 2; // 2%씩 증가
+        if (progress <= 95) { // 95%까지만 자동 진행
+            $('#progress-bar').css('width', progress + '%').text(progress + '%');
+        }
+    }, updateInterval);
+}
+
+// 온도 데이터 읽기 완료 콜백 (간단한 완료 알림)
+function onTemperatureDataComplete() {
+    console.log('Temperature data reading completed on temperature page');
+    
+    // 기존 타이머 정리
+    if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+    }
+    
+    // 프로그레스 바를 100%로 설정
+    $('#progress-bar').css('width', '100%').text('100%');
+    
+    // 잠시 후 진행바와 NFC 카드 숨기기
+    setTimeout(() => {
+        $('#progress-container').addClass("hide");
+        $('#nfcProgressCard').hide();
+    }, 1000);
+}
 
 // 온도 데이터 표시
+/**
+ * Android에서 전달되는 데이터 구조:
+ * {
+ *   status: 'success',
+ *   data: [
+ *     { temperature: 16.5, timestamp: 1693123200000, index: 0 },
+ *     { temperature: 16.3, timestamp: 1693123800000, index: 1 },
+ *     ...
+ *   ],
+ *   settings: {
+ *     measurementStatus: "3",        // 측정 상태 (0:대기, 1:진행중, 2:비정상종료, 3:정상완료)
+ *     maxTemp: 16.8,                 // 최고 온도
+ *     minTemp: 11.4,                 // 최저 온도  
+ *     temperatureRange: "[-20.0°C,50.0°C]",  // 설정 온도 범위
+ *     intervalTime: 600,             // 측정 간격 (초)
+ *     measurementStartTime: "2025-08-07 17:29:22"  // 측정 시작 시간
+ *   }
+ * }
+ */
 window.displayTemperatureData = function(data) {
     console.log('Displaying temperature data:', data);
+    console.log('Data.data:', data.data);
+    console.log('Data.data type:', typeof data.data);
+    console.log('Data.data length:', data.data ? data.data.length : 0);
+    console.log('Data.settings:', data.settings); // 메타데이터 구조 확인
 
     if (!data || data.status !== 'success') {
         showError('유효하지 않은 데이터입니다');
@@ -63,26 +210,110 @@ window.displayTemperatureData = function(data) {
         certificationMarkElement.classList.add('show');
     }
 
-    // 차트 그리기 (수정된 버전)
-    drawChart(data.data || data.temperatureData);
+    // 차트 그리기 - data.data가 문자열인 경우 파싱
+    let chartData = data.data || data.temperatureData;
+    if (typeof chartData === 'string') {
+        try {
+            chartData = JSON.parse(chartData);
+        } catch(e) {
+            console.error('Failed to parse chart data:', e);
+        }
+    }
+    drawChart(chartData);
 
     // 측정 정보 표시 (기존)
-    updateMeasurementInfo(data);
+    updateMeasurementInfo(data.settings );
 
-    // 데이터 테이블 업데이트 (새로 추가)
-    updateDataTable(data.data || data.temperatureData);
+    // 데이터 테이블 업데이트 - 파싱된 데이터 사용
+    updateDataTable(chartData);
 
     // 빈 상태 숨기기 (기존)
     hideEmptyState();
+    
+    // 차트 컨테이너와 측정 정보 표시
+    showMainContent();
 };
 
 // 전역 함수로 등록
 window.changeChartMode = changeChartMode;
 window.changePage = changePage;
-window.goToFirstPage = goToFirstPage;
-window.goToLastPage = goToLastPage;
-
 window.exportToExcel = exportToExcel;
+
+// 저장 진행률 업데이트 함수
+window.onSaveProgress = function(progress, savedCount, totalCount) {
+    const progressInfo = document.getElementById('saveProgress');
+    const progressText = document.querySelector('.progress-text');
+    const progressFill = document.querySelector('.progress-fill');
+    
+    if (progressInfo && progressText && progressFill) {
+        progressInfo.style.display = 'block';
+        progressText.textContent = `${Math.round(progress)}% (${savedCount}/${totalCount})`;
+        progressFill.style.width = `${progress}%`;
+    }
+};
+
+// 설정 정보 읽기 완료 콜백
+window.onSettingsRead = function(settings) {
+    console.log('Settings read completed on temperature page:', settings);
+    
+    // 진행바 메시지 업데이트
+    const progressText = document.querySelector('.smart-progress-text');
+    if (progressText) {
+        progressText.textContent = '온도 데이터를 읽는 중...';
+    }
+};
+
+// 저장 완료 시 데이터 받기
+window.onTemperatureDataReceived = function(data) {
+    console.log('Temperature data received from DB save:', data);
+    hideLoading();
+    
+    // 스마트 진행바 완료 처리
+    onTemperatureDataComplete();
+    
+    // 로딩 상태 요소 제거
+    const loadingState = document.querySelector('.loading-state');
+    if (loadingState) {
+        loadingState.remove();
+    }
+    
+    // 빈 상태 요소 제거
+    const emptyState = document.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    // main-content가 없는 경우 복구
+    if (!document.querySelector('.chart-container')) {
+        showMainContent();
+    }
+    
+    // 데이터 표시
+    displayTemperatureData(data);
+};
+
+// 저장 완료 콜백
+window.onSaveComplete = function(success, saved, total) {
+    console.log('Save completed:', success, saved, total);
+    if (!success) {
+        showError(`데이터 저장 실패 (${saved}/${total})`);
+    }
+};
+
+// 에러 처리 콜백
+window.onError = function(message) {
+    console.error('Error from native:', message);
+    hideLoading();
+    
+    // NFC 통신 오류 처리
+    if (message && message.includes('NFC communication error')) {
+        showNfcCommunicationError(message);
+    } else if (message && message.includes('Tag was lost')) {
+        showTagLostError();
+    } else {
+        showError(message || '데이터를 읽을 수 없습니다');
+    }
+};
 
 // 태그 정보 업데이트
 function updateTagInfo(uid) {
@@ -243,9 +474,9 @@ function drawChart(temperatureData) {
     };
 
     // 범위 모드인 경우 기준선과 Y축 범위 설정
-    if (currentChartMode === 'range' && currentData && currentData.temperatureRange) {
-        const minTemp   = currentData.settingMinTemp ;
-        const maxTemp   = currentData.settingMaxTemp ;
+    if (currentChartMode === 'range' && currentData && currentData.settings) {
+        const minTemp   = currentData.settings.settingMinTemp ;
+        const maxTemp   = currentData.settings.settingMaxTemp ;
 
         if (minTemp !== null && maxTemp !== null) {
             // Y축 범위 설정 (최저 -5 ~ 최고 +5)
@@ -467,6 +698,50 @@ function updateDetails(data) {
     detailsContainer.innerHTML = details.map(d => `<p>${d}</p>`).join('');
 }
 
+// 로딩 상태 표시
+function showLoadingState() {
+    // container 요소 찾기
+    const container = document.querySelector('.container');
+    if (!container) return;
+    
+    // 기존 차트, 테이블 등을 임시로 숨기기
+    const chartContainer = document.querySelector('.chart-container');
+    const measurementInfo = document.querySelector('.measurement-info');
+    const exportSection = document.querySelector('.data-export-section');
+    
+    if (chartContainer) chartContainer.style.display = 'none';
+    if (measurementInfo) measurementInfo.style.display = 'none';
+    if (exportSection) exportSection.style.display = 'none';
+
+    return false;
+
+    // 로딩 상태 표시
+    const loadingDiv = document.createElement('div');
+    loadingDiv.className = 'loading-state';
+    loadingDiv.innerHTML = `
+        <div class="loading-spinner"></div>
+        <h3>데이터 확인중...</h3>
+        <p>온도 데이터를 읽고 있습니다</p>
+        <div class="progress-info" id="saveProgress" style="display:none;">
+            <span class="progress-text">0%</span>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+        </div>
+    `;
+
+    // 중복이어서 표시안함.
+    // header 다음에 로딩 상태 추가
+    // const header = document.querySelector('.header');
+    // if (header && header.nextSibling) {
+    //     container.insertBefore(loadingDiv, header.nextSibling);
+   //  } else {
+    //     container.appendChild(loadingDiv);
+    // }
+}
+
+// 메인 콘텐츠 복구 함수 (showMainContent로 통일됨)
+
 // 빈 상태 표시
 function showEmptyState() {
     const mainContent = document.querySelector('.main-content');
@@ -487,6 +762,34 @@ function hideEmptyState() {
     const emptyState = document.querySelector('.empty-state');
     if (emptyState) {
         emptyState.remove();
+    }
+}
+
+// 메인 콘텐츠 표시 (차트 컨테이너, 측정 정보 등)
+function showMainContent() {
+    console.log('Showing main content elements');
+    
+    const chartContainer = document.querySelector('.chart-container');
+    const measurementInfo = document.querySelector('.measurement-info');
+    const exportSection = document.querySelector('.data-export-section');
+    
+    if (chartContainer) {
+        chartContainer.style.display = '';
+        console.log('Chart container displayed');
+    } else {
+        console.warn('Chart container not found');
+    }
+    
+    if (measurementInfo) {
+        measurementInfo.style.display = '';
+        console.log('Measurement info displayed');
+    } else {
+        console.warn('Measurement info not found');
+    }
+    
+    if (exportSection) {
+        exportSection.style.display = '';
+        console.log('Export section displayed');
     }
 }
 
@@ -544,7 +847,9 @@ function updatePagination() {
     }
 
     document.getElementById('tablePagination').style.display = 'flex';
-    updatePaginationInfo(); // 새로 추가된 함수 사용
+    document.getElementById('pageInfo').textContent = `${currentTablePage} / ${totalPages}`;
+    document.getElementById('prevPageBtn').disabled = currentTablePage === 1;
+    document.getElementById('nextPageBtn').disabled = currentTablePage === totalPages;
 }
 
 // 6. 페이지 변경 함수
@@ -554,43 +859,10 @@ function changePage(direction) {
 
     if (newPage >= 1 && newPage <= totalPages) {
         currentTablePage = newPage;
-        updatePaginationInfo(); // 기존 코드를 함수로 분리
         if (currentData) {
             updateDataTable(currentData.data || currentData.temperatureData);
         }
     }
-}
-
-// 첫 페이지로 이동 - 새로 추가
-function goToFirstPage() {
-    currentTablePage = 1;
-    updatePaginationInfo();
-    if (currentData) {
-        updateDataTable(currentData.data || currentData.temperatureData);
-    }
-}
-
-// 마지막 페이지로 이동 - 새로 추가
-function goToLastPage() {
-    const totalPages = Math.ceil(totalRows / rowsPerPage);
-    currentTablePage = totalPages;
-    updatePaginationInfo();
-    if (currentData) {
-        updateDataTable(currentData.data || currentData.temperatureData);
-    }
-}
-
-// 페이지네이션 정보 업데이트 - 새로 추가
-function updatePaginationInfo() {
-    const totalPages = Math.ceil(totalRows / rowsPerPage);
-    
-    document.getElementById('pageInfo').textContent = `${currentTablePage} / ${totalPages}`;
-    
-    // 버튼 상태 업데이트
-    document.getElementById('firstPageBtn').disabled = currentTablePage === 1;
-    document.getElementById('prevPageBtn').disabled = currentTablePage === 1;
-    document.getElementById('nextPageBtn').disabled = currentTablePage === totalPages;
-    document.getElementById('lastPageBtn').disabled = currentTablePage === totalPages;
 }
 
 
@@ -693,13 +965,158 @@ window.hideLoading = function() {
     if (loadingDiv) {
         loadingDiv.remove();
     }
+    
+    // 추가적으로 모든 로딩 관련 요소 정리
+    const allLoadingOverlays = document.querySelectorAll('.loading-overlay, #loadingOverlay');
+    allLoadingOverlays.forEach(overlay => {
+        if (overlay && overlay.parentNode) {
+            overlay.remove();
+        }
+    });
+    
+    // 메인 콘텐츠가 숨겨져 있다면 표시
+    const mainContent = document.querySelector('.main-content, .content-wrapper, #mainContent');
+    if (mainContent) {
+        mainContent.style.display = 'block';
+        mainContent.style.visibility = 'visible';
+    }
 };
 
 // 에러 표시
 window.showError = function(message) {
     hideLoading();
+    
+    // 토스트 메시지 표시
     showToast(message, 'error');
+    
+    // 메인 콘텐츠 영역에 에러 상태 표시
+    const mainContent = document.querySelector('.main-content, .content-wrapper, #mainContent, body');
+    if (mainContent) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'error-state-overlay';
+        errorDiv.innerHTML = `
+            <div class="error-content">
+                <div class="error-icon">⚠️</div>
+                <h3>데이터 읽기 실패</h3>
+                <p>${message}</p>
+                <div class="error-actions">
+                    <button onclick="location.reload();" class="retry-button">다시 시도</button>
+                    <button onclick="history.back();" class="back-button">돌아가기</button>
+                </div>
+            </div>
+        `;
+        
+        // 기존 에러 상태 제거 후 새 에러 표시
+        const existingError = document.querySelector('.error-state-overlay');
+        if (existingError) {
+            existingError.remove();
+        }
+        
+        mainContent.appendChild(errorDiv);
+    }
 };
+
+// NFC 통신 오류 처리
+function showNfcCommunicationError(message) {
+    const errorHtml = `
+        <div class="error-state">
+            <div class="error-icon">📱</div>
+            <h3>NFC 통신 오류</h3>
+            <p>데이터를 읽는 중에 NFC 연결이 끊어졌습니다.</p>
+            <div class="error-details">
+                <p><strong>해결 방법:</strong></p>
+                <ul>
+                    <li>🔄 NFC 태그를 다시 가까이 대어주세요</li>
+                    <li>📱 태그를 안정적으로 유지해주세요 (3~5초)</li>
+                    <li>🔍 태그와 휴대폰 사이에 장애물이 없는지 확인하세요</li>
+                </ul>
+            </div>
+            <div class="error-actions">
+                <button class="btn btn-primary" onclick="retryDataReading()">다시 시도</button>
+                <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+            </div>
+        </div>
+    `;
+    
+    showErrorState(errorHtml);
+}
+
+// 태그 분실 오류 처리
+function showTagLostError() {
+    const errorHtml = `
+        <div class="error-state">
+            <div class="error-icon">📍</div>
+            <h3>NFC 태그 연결 끊어짐</h3>
+            <p>데이터를 읽는 중에 태그 연결이 끊어졌습니다.</p>
+            <div class="error-details">
+                <p><strong>다시 시도해주세요:</strong></p>
+                <ul>
+                    <li>🎯 태그를 휴대폰 뒷면 중앙에 대어주세요</li>
+                    <li>⏰ 읽기가 완료될 때까지 움직이지 마세요</li>
+                    <li>🔋 NFC가 활성화되어 있는지 확인하세요</li>
+                </ul>
+            </div>
+            <div class="error-actions">
+                <button class="btn btn-primary" onclick="retryDataReading()">다시 시도</button>
+                <button class="btn btn-secondary" onclick="goBack()">돌아가기</button>
+            </div>
+        </div>
+    `;
+    
+    showErrorState(errorHtml);
+}
+
+// 에러 상태 표시
+function showErrorState(htmlContent) {
+    const container = document.querySelector('.container');
+    if (!container) return;
+    
+    // 기존 콘텐츠 숨기기
+    const chartContainer = document.querySelector('.chart-container');
+    const measurementInfo = document.querySelector('.measurement-info');
+    const exportSection = document.querySelector('.data-export-section');
+    
+    if (chartContainer) chartContainer.style.display = 'none';
+    if (measurementInfo) measurementInfo.style.display = 'none';
+    if (exportSection) exportSection.style.display = 'none';
+    
+    // 기존 에러 상태 제거
+    const existingError = document.querySelector('.error-state');
+    if (existingError) {
+        existingError.remove();
+    }
+    
+    // 새 에러 상태 추가
+    container.insertAdjacentHTML('beforeend', htmlContent);
+}
+
+// 데이터 읽기 재시도
+function retryDataReading() {
+    const errorState = document.querySelector('.error-state');
+    if (errorState) {
+        errorState.remove();
+    }
+    
+    // 현재 UID 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const uid = urlParams.get('uid');
+    
+    if (uid) {
+        showLoading('온도 데이터를 다시 읽고 있습니다...');
+        // NFC 매니저에 데이터 읽기 재시도 요청
+        if (window.Android && window.Android.readTemperatureData) {
+            window.Android.readTemperatureData(uid);
+        } else {
+            // 브라우저에서 테스트용
+            setTimeout(() => {
+                hideLoading();
+                showError('Android 환경에서만 사용 가능합니다');
+            }, 1000);
+        }
+    } else {
+        showError('태그 정보를 찾을 수 없습니다. 다시 스캔해주세요.');
+    }
+}
 
 // 토스트 메시지
 function showToast(message, type = 'info') {
@@ -792,6 +1209,11 @@ function hideLoading() {
         setTimeout(() => {
             loading.style.display = 'none';
         }, 300);
+    }
+    
+    // 로딩이 끝나면 메인 콘텐츠 표시 (데이터가 있는 경우)
+    if (window.currentData) {
+        showMainContent();
     }
 }
 
@@ -2302,11 +2724,12 @@ function getAndroidVersion() {
 }
 
 // ===== PDF 생성 메인 함수 =====
-// ===== PDF 생성 메인 함수 =====
-// PDF 생성 함수 수정 (한글 폰트 이슈 해결)
+async function generatePDFReport(autoShare = true ) {
+     try {
+        // Android 버전 체크
+        const androidVersion = getAndroidVersion();
+        console.log('Android Version:', androidVersion);
 
-async function generatePDFReport(autoShare = true) {
-    try {
         showPdfLoading('PDF 생성 준비 중...', 10);
 
         const { jsPDF } = window.jspdf;
@@ -2314,116 +2737,207 @@ async function generatePDFReport(autoShare = true) {
 
         // PDF 메타데이터 설정
         doc.setProperties({
-            title: 'NFC Temperature Sensor Data Report',
+            title: 'NFC Temperature Recording Data Report',
             subject: 'Temperature Measurement Data',
             author: 'TempReco',
-            keywords: 'NFC, Temperature, Sensor, Data',
+            keywords: 'NFC, Temperature, Recording, Data, wizice',
             creator: 'wizice.com'
         });
 
-        // 기본 폰트 설정 (한글 문제 방지)
-        doc.setFont('helvetica', 'normal');
 
-        let yPos = 20;
 
-        // 1. 헤더 추가
-        showPdfLoading('헤더 생성 중...', 20);
-        doc.setFontSize(20);
-        doc.setTextColor(102, 126, 234);
-        doc.text('TempReco', 105, yPos, { align: 'center' });
+         let yPos = 20;
 
-        yPos += 8;
-        doc.setFontSize(14);
-        doc.setTextColor(100, 100, 100);
-        doc.text('NFC Temperature Recording Label', 105, yPos, { align: 'center' });
+         // 1. 헤더 추가
+         doc.setFontSize(20);
+         doc.setTextColor(102, 126, 234);
+         doc.text('TempReco', 105, yPos, { align: 'center' });
 
-        yPos += 20;
+         yPos += 10;
+         doc.setFontSize(14);
+         doc.setTextColor(100, 100, 100);
+         doc.text('NFC Temperature Recording Label', 105, yPos, { align: 'center' });
 
-        // 2. 기본 정보 섹션
-        showPdfLoading('기본 정보 추가 중...', 30);
-        doc.setFontSize(16);
-        doc.setTextColor(102, 126, 234);
-        doc.text('Measurement Results', 20, yPos);
+         yPos += 15;
 
-        yPos += 10;
-        doc.setFontSize(11);
-        doc.setTextColor(0, 0, 0);
+         // 2. 기본 정보
+         doc.setFontSize(14);
+         doc.setTextColor(102, 126, 234);
+         doc.text('Measurement Results', 20, yPos);
 
-        // 정보 테이블
-        const results = [
-            ['Tag ID:', currentData?.uid || 'N/A'],
-            ['Status:', getMeasurementStatusTextEng(currentData?.measurementStatus || '0')],
-            ['Start Time:', currentData?.measurementStartTime || '-'],
-            ['Interval:', currentData?.intervalTime ? `${parseInt(currentData.intervalTime/60)} Min` : '-'],
-            ['Max Temperature:', currentData?.maxTemp ? `${currentData.maxTemp.toFixed(1)}°C` : '-'],
-            ['Min Temperature:', currentData?.minTemp ? `${currentData.minTemp.toFixed(1)}°C` : '-'],
-            ['Temperature Range:', currentData?.temperatureRange || '-'],
-            ['Total Measurements:', `${currentData?.data?.length || 0}`]
-        ];
+         yPos += 7;
+         doc.setFontSize(10);
+         doc.setTextColor(0, 0, 0);
 
-        results.forEach(([label, value], index) => {
-            const currentRowY = yPos + (index * 8);
-            
-            // 라벨 (굵게)
-            doc.setFont('helvetica', 'bold');
-            doc.setTextColor(60, 60, 60);
-            doc.text(label, 25, currentRowY);
-            
-            // 값 (일반)
-            doc.setFont('helvetica', 'normal');
-            
-            // 온도 값에 색상 적용
-            if (label.includes('Max')) {
-                doc.setTextColor(229, 62, 62);
-            } else if (label.includes('Min')) {
-                doc.setTextColor(49, 130, 206);
-            } else {
-                doc.setTextColor(0, 0, 0);
-            }
+         // 정보 테이블
+         const results = [
+             ['Tag ID', currentData?.uid || 'N/A'],
+             ['Measurement Status', getMeasurementStatusTextEng(currentData?.measurementStatus || '0')],
+             ['Start Time', currentData?.measurementStartTime || '-'],
+             ['Interval', currentData?.intervalTime ? `${parseInt(currentData.intervalTime/60)} Min` : '-'],
 
-            doc.text(value, 80, currentRowY);
-        });
+             ['Max Temperature', currentData?.maxTemp ? `${currentData.maxTemp.toFixed(1)}°C` : '-'],
+             ['Min Temperature', currentData?.minTemp ? `${currentData.minTemp.toFixed(1)}°C` : '-'],
+             ['Temperature Range', currentData?.temperatureRange || '-'],
+             ['Total Measurements', `${currentData?.data?.length || 0}`]
+         ];
 
-        yPos += results.length * 8 + 15;
+         results.forEach(([label, value]) => {
+             doc.setFont(undefined, 'bold');
+             doc.text(label + ':', 25, yPos);
+             doc.setFont(undefined, 'normal');
 
-        // 3. 차트 이미지 추가
-        showPdfLoading('차트 이미지 생성 중...', 50);
-        yPos = await addChartToPdfFixed(doc, yPos);
+             // 온도 값에 색상 적용
+             if (label.includes('Max')) {
+                 doc.setTextColor(229, 62, 62); // 빨간색
+             } else if (label.includes('Min')) {
+                 doc.setTextColor(49, 130, 206); // 파란색
+             }
 
-        // 4. 데이터 테이블 (새 페이지에)
-        showPdfLoading('데이터 테이블 생성 중...', 70);
-        if (currentData?.data && currentData.data.length > 0) {
-            doc.addPage();
-            addDataTableToPdfFixed(doc);
-        }
+             doc.text(value, 70, yPos);
+             doc.setTextColor(0, 0, 0); // 색상 리셋
+             yPos += 4;
+         });
 
-        // 5. 푸터 추가
-        showPdfLoading('푸터 추가 중...', 90);
-        addSimpleFooterFixed(doc);
+         yPos += 7;
 
-        showPdfLoading('PDF 변환 중...', 95);
+         // 4. 차트 이미지 추가 (canvas에서 직접)
+         showPdfLoading('차트 이미지 생성 중...', 50);
+
+         const chartCanvas = document.getElementById('temperatureChart');
+         if (chartCanvas) {
+             const chartImage = chartCanvas.toDataURL('image/png');
+
+             // 차트 제목
+             doc.setFontSize(14);
+             doc.setTextColor(102, 126, 234);
+             doc.text('Temperature Chart', 20, yPos);
+             yPos += 0;
+
+             // 차트 이미지 삽입
+             const imgWidth = 170;
+             const imgHeight = 180;
+             doc.addImage(chartImage, 'PNG', 20, yPos, imgWidth, imgHeight);
+             yPos += imgHeight + 10;
+         }
+
+         // 5. 데이터 테이블 (모든 데이터)
+         console.log('=== PDF 데이터 디버깅 ===');
+         console.log('currentData:', currentData);
+         console.log('currentData.data length:', currentData?.data?.length);
+         if (currentData?.data && currentData.data.length > 0) {
+             // 새 페이지 추가
+             doc.addPage();
+             yPos = 20;
+
+             doc.setFontSize(14);
+             doc.setTextColor(102, 126, 234);
+             doc.text('Measurement Data', 20, yPos);
+             yPos += 10;
+
+             // 테이블 헤더
+             doc.setFontSize(10);
+             doc.setFont(undefined, 'bold');
+             doc.text('No.', 25, yPos);
+             doc.text('Time', 45, yPos);
+             doc.text('Temperature', 120, yPos);
+             doc.text('Status', 160, yPos);
+
+             yPos += 5;
+             doc.setDrawColor(200, 200, 200);
+             doc.line(20, yPos, 190, yPos);
+             yPos += 5;
+
+             // 데이터 행 (페이지별로 나누어 처리)
+             doc.setFont(undefined, 'normal');
+             const dataToShow = currentData.data; // 모든 데이터 표시
+             const rowsPerPage = 35; // 페이지당 최대 행 수
+             const totalPages = Math.ceil(dataToShow.length / rowsPerPage);
+             
+             console.log('PDF에 표시할 데이터 개수:', dataToShow.length);
+             console.log('페이지당 행 수:', rowsPerPage);
+             console.log('총 페이지 수:', totalPages);
+             console.log('첫 번째 데이터:', dataToShow[0]);
+             console.log('마지막 데이터:', dataToShow[dataToShow.length - 1]);
+
+             for (let page = 0; page < totalPages; page++) {
+                 if (page > 0) {
+                     doc.addPage();
+                     yPos = 20;
+                     
+                     // 새 페이지에 헤더 추가
+                     doc.setFontSize(10);
+                     doc.setFont(undefined, 'bold');
+                     doc.text('No.', 25, yPos);
+                     doc.text('Time', 45, yPos);
+                     doc.text('Temperature', 120, yPos);
+                     doc.text('Status', 160, yPos);
+                     yPos += 5;
+                     doc.setDrawColor(200, 200, 200);
+                     doc.line(20, yPos, 190, yPos);
+                     yPos += 5;
+                     doc.setFont(undefined, 'normal');
+                 }
+                 
+                 const startIdx = page * rowsPerPage;
+                 const endIdx = Math.min(startIdx + rowsPerPage, dataToShow.length);
+                 
+                 console.log(`페이지 ${page + 1}: 데이터 ${startIdx}-${endIdx - 1} 처리 중`);
+                 
+                 for (let i = startIdx; i < endIdx; i++) {
+                     const item = dataToShow[i];
+                     
+                     // 첫 5개와 마지막 5개 데이터 로깅
+                     if (i < 5 || i >= dataToShow.length - 5) {
+                         console.log(`데이터[${i}]:`, item);
+                     }
+                     
+                     doc.text(`${i + 1}`, 25, yPos);
+                     doc.text(item.time || '-', 45, yPos);
+                     doc.text(`${item.temperature ? item.temperature.toFixed(1) : '-'}°C`, 120, yPos);
+                     doc.text('Normal', 160, yPos);
+                     yPos += 7;
+                 }
+             }
+             
+             console.log(`PDF에 총 ${dataToShow.length}개 데이터가 추가되었습니다.`);
+         }
+
+         // 6. 푸터
+         const pageCount = doc.internal.getNumberOfPages();
+         for (let i = 1; i <= pageCount; i++) {
+             doc.setPage(i);
+             doc.setFontSize(8);
+             doc.setTextColor(150, 150, 150);
+             doc.text(`Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+             doc.text('© TempReco - NFC Temperature Label', 105, 290, { align: 'center' });
+         }
+
+        showPdfLoading('PDF 변환 중...', 80);
 
         const pdfBase64 = doc.output('datauristring');
         const base64Data = pdfBase64.split(',')[1];
 
+        // 메타데이터 생성
         const metadata = {
-            fileName: `TempReco_Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
+            fileName: `Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
             fileSize: base64Data.length,
             mimeType: 'application/pdf',
             tagId: currentData?.uid || 'unknown',
             measurementCount: currentData?.data?.length || 0,
             measurementStatus: currentData?.measurementStatus || '0',
             createdAt: new Date().toISOString(),
-            autoShare: autoShare
+            autoShare: autoShare  // 자동 공유 옵션
         };
 
-        showPdfLoading('Android로 전송 중...', 100);
+        showPdfLoading('안드로이드로 전송 중...', 100);
 
+        // Android 인터페이스 호출
         if (window.Android && window.Android.savePdfFromBase64) {
             window.Android.savePdfFromBase64(base64Data, JSON.stringify(metadata));
         } else {
-            // 웹 브라우저에서는 직접 다운로드
-            downloadPDFDirectly(doc, metadata.fileName);
+            // 웹 브라우저에서 실행 중
+            downloadPDFDirectly();
         }
 
         hidePdfLoading();
@@ -2433,399 +2947,7 @@ async function generatePDFReport(autoShare = true) {
         hidePdfLoading();
         showToast('PDF 생성에 실패했습니다: ' + error.message);
     }
-}
-
-// 차트를 PDF에 추가하는 수정된 함수
-async function addChartToPdfFixed(doc, startY) {
-    try {
-        const chartElement = document.querySelector('.chart-container');
-
-        if (!chartElement) {
-            console.warn('차트 요소를 찾을 수 없습니다.');
-            // 차트가 없어도 계속 진행
-            doc.setFontSize(14);
-            doc.setTextColor(102, 126, 234);
-            doc.text('Temperature Chart', 20, startY);
-            doc.setFontSize(10);
-            doc.setTextColor(100, 100, 100);
-            doc.text('Chart not available', 20, startY + 15);
-            return startY + 30;
-        }
-
-        // 차트가 완전히 렌더링될 때까지 잠시 대기
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        // html2canvas로 차트 영역을 이미지로 변환
-        const canvas = await html2canvas(chartElement, {
-            scale: 2,
-            backgroundColor: '#ffffff',
-            logging: false,
-            useCORS: true,
-            allowTaint: true,
-            width: chartElement.offsetWidth,
-            height: chartElement.offsetHeight,
-            timeout: 30000
-        });
-
-        const imgData = canvas.toDataURL('image/jpeg', 0.9);
-
-        // PDF에 차트 이미지 추가
-        const imgWidth = 170;
-        const imgHeight = Math.min((canvas.height * imgWidth) / canvas.width, 120); // 최대 높이 제한
-
-        // 차트 제목
-        doc.setFontSize(16);
-        doc.setTextColor(102, 126, 234);
-        doc.text('Temperature Chart', 20, startY);
-
-        // 차트 이미지
-        doc.addImage(imgData, 'JPEG', 20, startY + 10, imgWidth, imgHeight);
-
-        return startY + imgHeight + 20;
-
-    } catch (error) {
-        console.error('차트 이미지 생성 실패:', error);
-
-        // 차트 캡처 실패 시 텍스트로 대체
-        doc.setFontSize(16);
-        doc.setTextColor(102, 126, 234);
-        doc.text('Temperature Chart', 20, startY);
-
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        doc.text('Chart image could not be generated.', 20, startY + 15);
-        doc.text('Please refer to the data table below.', 20, startY + 25);
-
-        return startY + 40;
-    }
-}
-
-// 데이터 테이블을 PDF에 추가하는 수정된 함수 (모든 데이터 표시)
-function addDataTableToPdfFixed(doc) {
-    const temperatureData = currentData?.data || [];
-    
-    if (!temperatureData || temperatureData.length === 0) {
-        return;
-    }
-
-    let currentY = 20;
-    let currentPage = 1;
-    const rowsPerPage = 35; // 페이지당 표시할 행 수
-
-    // 제목
-    doc.setFontSize(16);
-    doc.setTextColor(102, 126, 234);
-    doc.text('Measurement Data', 20, currentY);
-    currentY += 15;
-
-    // 데이터 개수
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Total ${temperatureData.length} measurements`, 20, currentY);
-    currentY += 10;
-
-    // 헤더 추가 함수
-    function addTableHeader() {
-        // 테이블 헤더 배경
-        doc.setFillColor(240, 240, 240);
-        doc.rect(20, currentY - 2, 170, 8, 'F');
-        
-        // 테이블 헤더 테두리
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.3);
-        doc.rect(20, currentY - 2, 170, 8);
-        
-        // 헤더 텍스트
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(60, 60, 60);
-        
-        doc.text('No.', 25, currentY + 3);
-        doc.text('Time', 45, currentY + 3);
-        doc.text('Temperature', 100, currentY + 3);
-        doc.text('Status', 140, currentY + 3);
-        
-        currentY += 10;
-    }
-
-    // 첫 번째 헤더 추가
-    addTableHeader();
-
-    // 모든 데이터 행 처리
-    for (let i = 0; i < temperatureData.length; i++) {
-        const item = temperatureData[i];
-        
-        // 페이지 넘김 체크 (하단 여백 30mm 확보)
-        if (currentY > 267) {
-            doc.addPage();
-            currentPage++;
-            currentY = 20;
-            
-            // 새 페이지에 헤더 다시 추가
-            doc.setFontSize(14);
-            doc.setTextColor(102, 126, 234);
-            doc.text(`Measurement Data (continued) - Page ${currentPage}`, 20, currentY);
-            currentY += 15;
-            
-            addTableHeader();
-        }
-
-        // 행 배경 (짝수 행)
-        if (i % 2 === 0) {
-            doc.setFillColor(248, 249, 250);
-            doc.rect(20, currentY - 2, 170, 6, 'F');
-        }
-
-        // 행 테두리
-        doc.setDrawColor(230, 230, 230);
-        doc.setLineWidth(0.1);
-        doc.rect(20, currentY - 2, 170, 6);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(8);
-
-        // 1. 번호
-        doc.setTextColor(100, 100, 100);
-        doc.text((i + 1).toString(), 25, currentY + 2);
-
-        // 2. 시간
-        doc.setTextColor(60, 60, 60);
-        const timeText = formatTimeForPdf(item.time);
-        doc.text(timeText, 45, currentY + 2);
-
-        // 3. 온도 (색상 구분)
-        const tempValue = item.temperature;
-        const tempText = tempValue ? `${tempValue.toFixed(1)}°C` : '-';
-        
-        // 온도 범위에 따른 색상 설정
-        const tempColor = getTemperatureColor(tempValue);
-        doc.setTextColor(tempColor.r, tempColor.g, tempColor.b);
-        doc.text(tempText, 100, currentY + 2);
-
-        // 4. 상태
-        doc.setTextColor(76, 175, 80); // 초록색
-        doc.text('Normal', 140, currentY + 2);
-
-        // 열 구분선
-        const columnPositions = [40, 95, 135];
-        doc.setDrawColor(240, 240, 240);
-        columnPositions.forEach(x => {
-            doc.line(x, currentY - 2, x, currentY + 4);
-        });
-
-        currentY += 6;
-    }
-
-    // 데이터 요약 통계 추가 (마지막에)
-    if (currentY < 240) {
-        currentY += 10;
-        addDataSummaryToPdf(doc, currentY, temperatureData);
-    } else {
-        doc.addPage();
-        addDataSummaryToPdf(doc, 20, temperatureData);
-    }
-}
-
-// 시간 포맷팅 함수
-function formatTimeForPdf(timeString) {
-    if (!timeString) return '-';
-
-    try {
-        // "2025-07-22 15:30:45" 형태를 "07-22 15:30" 형태로 변환
-        if (timeString.includes(' ')) {
-            const [date, time] = timeString.split(' ');
-            const [year, month, day] = date.split('-');
-            const [hour, minute] = time.split(':');
-            return `${month}-${day} ${hour}:${minute}`;
-        }
-
-        // 시간만 있는 경우
-        if (timeString.includes(':')) {
-            const [hour, minute] = timeString.split(':');
-            return `${hour}:${minute}`;
-        }
-
-        return timeString.length > 15 ? timeString.substring(0, 15) : timeString;
-    } catch (error) {
-        return timeString.length > 15 ? timeString.substring(0, 15) : timeString;
-    }
-}
-
-// 온도에 따른 색상 결정
-function getTemperatureColor(temperature) {
-    if (!temperature && temperature !== 0) {
-        return { r: 150, g: 150, b: 150 }; // 회색 (데이터 없음)
-    }
-
-    // 설정 범위 모드인 경우
-    if (currentChartMode === 'range' && currentData?.temperatureRange) {
-        const { minTemp, maxTemp } = parseTemperatureRange(currentData.temperatureRange);
-
-        if (minTemp !== null && maxTemp !== null) {
-            if (temperature < minTemp) {
-                return { r: 54, g: 162, b: 235 }; // 파란색 (저온)
-            } else if (temperature > maxTemp) {
-                return { r: 220, g: 53, b: 69 }; // 빨간색 (고온)
-            }
-        }
-    }
-
-    // 일반적인 온도 색상
-    if (temperature < 0) {
-        return { r: 54, g: 162, b: 235 }; // 파란색
-    } else if (temperature > 40) {
-        return { r: 220, g: 53, b: 69 }; // 빨간색
-    } else {
-        return { r: 76, g: 175, b: 80 }; // 초록색 (정상)
-    }
-}
-
-// 데이터 요약 통계 추가
-function addDataSummaryToPdf(doc, startY, temperatureData) {
-    let currentY = startY;
-
-    // 구분선
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.5);
-    doc.line(20, currentY, 190, currentY);
-    currentY += 10;
-
-    // 제목
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
-    doc.setTextColor(102, 126, 234);
-    doc.text('Data Summary Statistics', 20, currentY);
-    currentY += 15;
-
-    // 통계 계산
-    const stats = calculateTemperatureStats(temperatureData);
-
-    // 통계 박스 배경
-    doc.setFillColor(248, 249, 250);
-    doc.setDrawColor(220, 220, 220);
-    doc.rect(20, currentY - 5, 170, 45, 'FD');
-
-    currentY += 5;
-
-    // 통계 정보 표시 (2열로 배치)
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.setTextColor(60, 60, 60);
-
-    const statItems = [
-        ['Total Measurements:', `${stats.count}`],
-        ['Average Temperature:', `${stats.average.toFixed(2)}°C`],
-        ['Max Temperature:', `${stats.max.toFixed(1)}°C`],
-        ['Min Temperature:', `${stats.min.toFixed(1)}°C`],
-        ['Temperature Range:', `${stats.range.toFixed(1)}°C`],
-        ['Standard Deviation:', `${stats.stdDev.toFixed(2)}°C`]
-    ];
-
-    statItems.forEach(([label, value], index) => {
-        const x = 25 + (index % 2) * 85;
-        const y = currentY + Math.floor(index / 2) * 8;
-        
-        doc.setFont('helvetica', 'bold');
-        doc.text(label, x, y);
-        doc.setFont('helvetica', 'normal');
-        
-        // 온도 값에 색상 적용
-        if (label.includes('Max')) {
-            doc.setTextColor(220, 53, 69);
-        } else if (label.includes('Min')) {
-            doc.setTextColor(54, 162, 235);
-        } else {
-            doc.setTextColor(60, 60, 60);
-        }
-        
-        doc.text(value, x + 45, y);
-        doc.setTextColor(60, 60, 60);
-    });
-}
-
-// 온도 통계 계산
-function calculateTemperatureStats(data) {
-    const validTemps = data.filter(item => item.temperature !== null && item.temperature !== undefined)
-                          .map(item => item.temperature);
-
-    if (validTemps.length === 0) {
-        return {
-            count: 0,
-            average: 0,
-            max: 0,
-            min: 0,
-            range: 0,
-            stdDev: 0
-        };
-    }
-
-    const count = validTemps.length;
-    const sum = validTemps.reduce((a, b) => a + b, 0);
-    const average = sum / count;
-    const max = Math.max(...validTemps);
-    const min = Math.min(...validTemps);
-    const range = max - min;
-
-    // 표준편차 계산
-    const variance = validTemps.reduce((acc, temp) => acc + Math.pow(temp - average, 2), 0) / count;
-    const stdDev = Math.sqrt(variance);
-
-    return {
-        count,
-        average,
-        max,
-        min,
-        range,
-        stdDev
-    };
-}
-
-// 푸터 추가하는 수정된 함수
-function addSimpleFooterFixed(doc) {
-    const pageCount = doc.internal.getNumberOfPages();
-    const pageHeight = doc.internal.pageSize.height;
-
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        
-        // 페이지 번호
-        doc.setFontSize(8);
-        doc.setTextColor(150, 150, 150);
-        doc.text(`Page ${i} of ${pageCount}`, 105, pageHeight - 10, { align: 'center' });
-        
-        // 하단 정보
-        doc.text('© TempReco - NFC Temperature Label', 105, pageHeight - 5, { align: 'center' });
-    }
-}
-
-// 웹에서 직접 다운로드하는 함수
-function downloadPDFDirectly(doc, fileName) {
-    try {
-        doc.save(fileName || 'temperature_report.pdf');
-        showToast('PDF가 다운로드되었습니다');
-    } catch (error) {
-        console.error('PDF 다운로드 실패:', error);
-        showToast('PDF 다운로드에 실패했습니다');
-    }
-}
-
-// 영문 상태 텍스트 함수
-function getMeasurementStatusTextEng(status) {
-    switch (String(status)) {
-        case "0": return "Standby (Before measurement start)";
-        case "1": return "Measuring (Temperature logging in progress)";
-        case "2": return "The tag is not in a measuring state";
-        case "3": return "Completed (All measurements completed)";
-        default: return "Unknown";
-    }
-}
-
-// 전역 함수로 등록
-window.generatePDFReport = generatePDFReport;
-window.addChartToPdfFixed = addChartToPdfFixed;
-window.addDataTableToPdfFixed = addDataTableToPdfFixed;
-window.addSimpleFooterFixed = addSimpleFooterFixed;
-window.downloadPDFDirectly = downloadPDFDirectly;
+ }
 
 // ===== PDF 내용 생성 =====
 function createPDFContent() {
@@ -2907,10 +3029,85 @@ function createPDFContent() {
             </div>
         </div>
 
+        ${generateAnalysisSectionHTML()}
+
         <!-- 생성 정보 -->
         <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e0e0e0; text-align: center; color: #666; font-size: 12px;">
             <p>생성일시: ${new Date().toLocaleString('ko-KR')}</p>
             <p>© TempReco - NFC Temperature Label</p>
+        </div>
+    `;
+}
+
+// ===== 분석 섹션 HTML 생성 =====
+function generateAnalysisSectionHTML() {
+    // 분석 데이터가 있는지 확인
+    const analysisData = window.tempAnalysisData || window.currentAnalysis;
+    if (!analysisData) {
+        return ''; // 분석 데이터가 없으면 빈 문자열 반환
+    }
+
+    const settings = currentData?.settings || {};
+    const highThreshold = settings.maxTemp || 25;
+    const lowThreshold = settings.minTemp || 5;
+
+    return `
+        <!-- 데이터 분석 결과 -->
+        <div style="margin-bottom: 30px;">
+            <h3 style="font-size: 18px; color: #667eea; margin-bottom: 15px;">📊 데이터 분석 결과</h3>
+            
+            <!-- 분석 요약 -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div style="background: #fff5f5; border-left: 4px solid #e53e3e; padding: 15px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 8px 0; color: #e53e3e; font-size: 14px;">⚠️ 고온 경고</h4>
+                    <p style="margin: 0; font-size: 20px; font-weight: bold; color: #e53e3e;">${analysisData.highTemp?.length || 0}건</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">${highThreshold}°C 초과</p>
+                </div>
+                
+                <div style="background: #f0f9ff; border-left: 4px solid #3182ce; padding: 15px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 8px 0; color: #3182ce; font-size: 14px;">❄️ 저온 경고</h4>
+                    <p style="margin: 0; font-size: 20px; font-weight: bold; color: #3182ce;">${analysisData.lowTemp?.length || 0}건</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">${lowThreshold}°C 미만</p>
+                </div>
+                
+                <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 8px 0; color: #f59e0b; font-size: 14px;">📈 급격한 변화</h4>
+                    <p style="margin: 0; font-size: 20px; font-weight: bold; color: #f59e0b;">${analysisData.rapidChange?.length || 0}건</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">5°C 이상 급변</p>
+                </div>
+                
+                <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 15px; border-radius: 8px;">
+                    <h4 style="margin: 0 0 8px 0; color: #10b981; font-size: 14px;">✅ 정상 데이터</h4>
+                    <p style="margin: 0; font-size: 20px; font-weight: bold; color: #10b981;">${analysisData.normalData?.length || 0}건</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px; color: #666;">정상 범위 내</p>
+                </div>
+            </div>
+            
+            <!-- 장시간 이상 상태 -->
+            ${analysisData.longPeriod?.length > 0 ? `
+            <div style="background: #faf5ff; border: 1px solid #d8b4fe; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #7c3aed; font-size: 14px;">⏰ 장시간 이상 상태: ${analysisData.longPeriod.length}건</h4>
+                ${analysisData.longPeriod.slice(0, 3).map(item => `
+                    <p style="margin: 5px 0; font-size: 12px; color: #666;">
+                        • ${item.startTime} ~ ${item.endTime} (${item.duration}회 연속)
+                    </p>
+                `).join('')}
+                ${analysisData.longPeriod.length > 3 ? `
+                    <p style="margin: 5px 0; font-size: 12px; color: #999; font-style: italic;">
+                        외 ${analysisData.longPeriod.length - 3}건 더...
+                    </p>
+                ` : ''}
+            </div>
+            ` : ''}
+            
+            <!-- 분석 기준 -->
+            <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef;">
+                <h4 style="margin: 0 0 8px 0; color: #495057; font-size: 13px;">분석 기준</h4>
+                <p style="margin: 0; font-size: 11px; color: #6c757d;">
+                    • 고온 경고: ${highThreshold}°C 초과 | 저온 경고: ${lowThreshold}°C 미만<br>
+                    • 급격한 변화: 연속 측정값 간 5°C 이상 차이 | 장시간 이상: 30회 이상 연속 임계값 초과
+                </p>
+            </div>
         </div>
     `;
 }
@@ -2951,9 +3148,9 @@ async function createPDFChart(container) {
         }];
 
         // 범위 모드인 경우 기준선 추가
-        if (currentChartMode === 'range' && currentData.settingMinTemp !== undefined) {
-            const minTemp = currentData.settingMinTemp;
-            const maxTemp = currentData.settingMaxTemp;
+        if (currentChartMode === 'range' && currentData.settings.settingMinTemp !== undefined) {
+            const minTemp = currentData.settings.settingMinTemp;
+            const maxTemp = currentData.settings.settingMaxTemp;
 
             datasets.push(
                 {
