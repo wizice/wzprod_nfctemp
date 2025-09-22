@@ -347,6 +347,29 @@ function updateTagInfo(uid) {
 
 // 요약 정보 업데이트
 function updateSummary(data) {
+    // data.data에서 min, max, avg, measurementCount 값 계산 (없는 경우)
+    if (data.data && data.data.length > 0) {
+        if (!data.minTemp || !data.maxTemp || !data.avgTemp || !data.measurementCount) {
+            const temperatures = data.data.map(item => item.temperature).filter(temp => temp != null);
+            
+            if (temperatures.length > 0) {
+                if (!data.minTemp) {
+                    data.minTemp = Math.min(...temperatures);
+                }
+                if (!data.maxTemp) {
+                    data.maxTemp = Math.max(...temperatures);
+                }
+                if (!data.avgTemp) {
+                    data.avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+                }
+            }
+            
+            if (!data.measurementCount) {
+                data.measurementCount = data.data.length;
+            }
+        }
+    }
+    
     // 최저 온도
     const minTempElement = document.getElementById('minTempValue');
     if (minTempElement) {
