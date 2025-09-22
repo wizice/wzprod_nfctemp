@@ -2952,8 +2952,10 @@ async function generatePDFReport(autoShare = true ) {
         const base64Data = pdfBase64.split(',')[1];
 
         // 메타데이터 생성
+        const now = new Date();
+        const dateTimeString = now.toISOString().replace(/[:.]/g, '-').slice(0, 19); // YYYY-MM-DDTHH-MM-SS 형태
         const metadata = {
-            fileName: `Report_${currentData?.uid || 'unknown'}_${new Date().toISOString().split('T')[0]}.pdf`,
+            fileName: `Report_${currentData?.uid || 'unknown'}_${dateTimeString}.pdf`,
             fileSize: base64Data.length,
             mimeType: 'application/pdf',
             tagId: currentData?.uid || 'unknown',
