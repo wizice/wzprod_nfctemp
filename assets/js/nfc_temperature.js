@@ -225,7 +225,7 @@ window.displayTemperatureData = function(data) {
     updateSummary(data);
 
     // 측정 정보 표시 (설정 정보)
-    updateMeasurementInfo(data.settings);
+    updateMeasurementInfo(data);
 
     // 데이터 테이블 업데이트 - 파싱된 데이터 사용
     updateDataTable(chartData);
@@ -369,7 +369,7 @@ function updateSummary(data) {
             }
         }
     }
-    
+
     // 최저 온도
     const minTempElement = document.getElementById('minTempValue');
     if (minTempElement) {
@@ -636,18 +636,19 @@ function parseTemperatureRange(temperatureRange) {
 
 function updateMeasurementInfo(data) {
     // 측정 상태
+    data_settings = data.settings
     const measurementStatusElement = document.getElementById('measurementStatus');
     if (measurementStatusElement) {
-        const statusText = getMeasurementStatusText(data.measurementStatus || "0");
+        const statusText = getMeasurementStatusText(data_settings.measurementStatus || "0");
         measurementStatusElement.textContent = statusText;
 
         // 상태에 따른 색상 적용
         measurementStatusElement.className = 'info-value';
-        if (data.measurementStatus === "1") {
+        if (data_settings.measurementStatus === "1") {
             measurementStatusElement.style.color = '#2196F3'; // 측정 중 - 파랑
-        } else if (data.measurementStatus === "2") {
+        } else if (data_settings.measurementStatus === "2") {
             measurementStatusElement.style.color = '#FF5722'; // 비정상 종료 - 빨강
-        } else if (data.measurementStatus === "3") {
+        } else if (data_settings.measurementStatus === "3") {
             measurementStatusElement.style.color = '#4CAF50'; // 정상 완료 - 초록
         } else {
             measurementStatusElement.style.color = '#999'; // 대기 - 회색
@@ -669,20 +670,20 @@ function updateMeasurementInfo(data) {
     // 측정 범위
     const temperatureRangeElement = document.getElementById('temperatureRange');
     if (temperatureRangeElement) {
-        temperatureRangeElement.textContent = data.temperatureRange || '-';
+        temperatureRangeElement.textContent = data_settings.temperatureRange || '-';
     }
 
     // 측정 간격
     const intervalTimeElement = document.getElementById('intervalTime');
     if (intervalTimeElement) {
-        const interval = data.intervalTime || data.interval;
+        const interval = data_settings.intervalTime || data_settings.interval;
         intervalTimeElement.textContent = interval ? `${parseInt(interval/60)}분` : '-';
     }
 
     // 측정 시작일시
     const measurementStartTimeElement = document.getElementById('measurementStartTime');
     if (measurementStartTimeElement) {
-        measurementStartTimeElement.textContent = data.measurementStartTime || '-';
+        measurementStartTimeElement.textContent = data_settings.measurementStartTime || '-';
     }
 }
 
@@ -848,8 +849,8 @@ function updateDataTable(temperatureData) {
 
         // 온도에 따른 색상 클래스 결정
         let tempClass = 'temp-normal';
-        if (currentChartMode === 'range' && currentData.temperatureRange) {
-            const { minTemp, maxTemp } = parseTemperatureRange(currentData.temperatureRange);
+        if (currentChartMode === 'range' && (currentData?.settings?.temperatureRange || currentData.temperatureRange)) {
+            const { minTemp, maxTemp } = parseTemperatureRange(currentData?.settings?.temperatureRange || currentData.temperatureRange);
             if (minTemp !== null && maxTemp !== null) {
                 if (item.temperature < minTemp) tempClass = 'temp-low';
                 else if (item.temperature > maxTemp) tempClass = 'temp-high';
@@ -1606,12 +1607,12 @@ async function addPdfHeader(doc) {
 
         doc.text('측정 범위:', 25, currentY);
         doc.setFont('helvetica', 'normal');
-        doc.text(currentData?.temperatureRange || '-', 50, currentY);
+        doc.text(currentData?.settings?.temperatureRange || currentData?.temperatureRange || '-', 50, currentY);
 
         doc.setFont('helvetica', 'bold');
         doc.text('측정 간격:', 110, currentY);
         doc.setFont('helvetica', 'normal');
-        const interval = currentData?.intervalTime || currentData?.interval;
+        const interval = currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData?.intervalTime || currentData?.interval;
         doc.text(interval ? `${parseInt(interval/60)}분` : '-', 135, currentY);
 
         currentY += 8;
@@ -1639,7 +1640,7 @@ async function addPdfHeader(doc) {
         doc.setFont('helvetica', 'bold');
         doc.text('시작일시:', 25, currentY);
         doc.setFont('helvetica', 'normal');
-        const startTime = currentData?.measurementStartTime || '-';
+        const startTime = currentData?.settings?.measurementStartTime || currentData?.measurementStartTime || '-';
         // 긴 날짜 텍스트 줄임
         const shortStartTime = startTime.length > 16 ? startTime.substring(0, 16) + '...' : startTime;
         doc.text(shortStartTime, 50, currentY);
@@ -1893,7 +1894,7 @@ function addLastPageFooterInfo(doc, footerY) {
         }
 
         // 측정 간격 정보
-        const interval = currentData?.intervalTime || currentData?.interval;
+        const interval = currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData?.intervalTime || currentData?.interval;
         if (interval) {
             summaryText += `Interval: ${parseInt(interval/60)}분 | `;
         }
@@ -2159,7 +2160,7 @@ function addTableHeader(doc, startY, totalCount) {
     doc.text(infoText, 20, currentY);
 
     // 측정 간격 정보
-    const interval = currentData?.intervalTime || currentData?.interval;
+    const interval = currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData?.intervalTime || currentData?.interval;
     if (interval) {
         doc.text(`측정 간격: ${parseInt(interval/60)}분`, 100, currentY);
     }
@@ -2303,8 +2304,8 @@ function getTemperatureColor(temperature) {
     }
 
     // 설정 범위 모드인 경우
-    if (currentChartMode === 'range' && currentData?.temperatureRange) {
-        const { minTemp, maxTemp } = parseTemperatureRange(currentData.temperatureRange);
+    if (currentChartMode === 'range' && (currentData?.settings?.temperatureRange || currentData?.temperatureRange)) {
+        const { minTemp, maxTemp } = parseTemperatureRange(currentData?.settings?.temperatureRange || currentData?.temperatureRange);
 
         if (minTemp !== null && maxTemp !== null) {
             if (temperature < minTemp) {
@@ -2335,8 +2336,8 @@ function checkTemperatureRange(temperature) {
     }
 
     // 설정 범위 모드인 경우
-    if (currentChartMode === 'range' && currentData?.temperatureRange) {
-        const { minTemp, maxTemp } = parseTemperatureRange(currentData.temperatureRange);
+    if (currentChartMode === 'range' && (currentData?.settings?.temperatureRange || currentData?.temperatureRange)) {
+        const { minTemp, maxTemp } = parseTemperatureRange(currentData?.settings?.temperatureRange || currentData?.temperatureRange);
 
         if (minTemp !== null && maxTemp !== null) {
             if (temperature < minTemp) {
@@ -2506,7 +2507,7 @@ async function exportToExcelViaAndroid(autoShare = false) {
 
         // 데이터 행 추가
         currentData.data.forEach((item, index) => {
-            const time = formatTimeForPdf(item.time || `${index * (currentData.intervalTime || 600)}초`);
+            const time = formatTimeForPdf(item.time || `${index * (currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData.intervalTime || 600)}초`);
             const temp = item.temperature.toFixed(1);
             const status = item.status || 'Normal';
 
@@ -2805,12 +2806,12 @@ async function generatePDFReport(autoShare = true ) {
          const results = [
              ['Tag ID', currentData?.uid || 'N/A'],
              ['Measurement Status', getMeasurementStatusTextEng(currentData?.measurementStatus || '0')],
-             ['Start Time', currentData?.measurementStartTime || '-'],
-             ['Interval', currentData?.intervalTime ? `${parseInt(currentData.intervalTime/60)} Min` : '-'],
+             ['Start Time', currentData?.settings?.measurementStartTime || currentData?.measurementStartTime || '-'],
+             ['Interval', (currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData?.intervalTime) ? `${parseInt((currentData?.settings?.intervalTime || currentData?.settings?.interval || currentData?.intervalTime)/60)} Min` : '-'],
 
              ['Max Temperature', currentData?.maxTemp ? `${currentData.maxTemp.toFixed(1)}°C` : '-'],
              ['Min Temperature', currentData?.minTemp ? `${currentData.minTemp.toFixed(1)}°C` : '-'],
-             ['Temperature Range', currentData?.temperatureRange || '-'],
+             ['Temperature Range', currentData?.settings?.temperatureRange || currentData?.temperatureRange || '-'],
              ['Total Measurements', `${currentData?.data?.length || 0}`]
          ];
 
