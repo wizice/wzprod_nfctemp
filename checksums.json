@@ -8,8 +8,7 @@
     "nfc_admin_tags.html": "ddedf3579de25e3d97cd6c9873c21251",
     "nfc_admin_users.html": "4cbabb9c1f958335e10e7cafe6f612fe",
     "nfc_main.html": "39e6fed90e4baa42ffad9b6bf9772723",
-    "nfc_temperature_main.html": "4efd822a4bbd879250f1e95b725a4290",
-    "temp_files.txt": "8e745c3644aaa489744dbd3663c5d34c",
+    "nfc_temperature_main.html": "692996bb99e3a2786af9818d7249d056",
     "css/bootstrap.min.css": "94994c66fec8c3468b269dc0cc242151",
     "css/fontawesome_all.css": "6386fb409d4a2abc96eee7be8f6d4cc4",
     "css/nfc_admin.css": "460fc364fd24e7e00842d7a0224ea24c",
@@ -50,7 +49,7 @@
     "js/nfc_admin_login.js": "daa06142fe946bf3061eeccbc0d3d3c5",
     "js/nfc_common.js": "ebbdd345af5663556d6f8955ea0a1bc0",
     "js/nfc_main.js": "d7e5d405e11f11dd0315989bd96a6fff",
-    "js/nfc_temperature.js": "710b5a6a5689eb109738a3337382b8fb",
+    "js/nfc_temperature.js": "72d89a5313e749f7d46e9b9ade11fb5b",
     "js/nfc_temperature_extensions.js": "5f8da08a434c78ec4eff3b02fb45e9ed",
     "js/wasm_auth_loader.js": "3c311d0d848238ede735af6e821baddf",
     "wasm/nfc_auth_wasm.d.ts": "f8da61a0eb2bf6dd7436bc5b8f773144",
@@ -59,8 +58,8 @@
     "wasm/nfc_auth_wasm_bg.wasm.d.ts": "a7e47dd87348ab6e31ffeb7268837056",
     "wasm/package.json": "b8b73f92693c2129ddff9428e432d4de"
   },
-  "generated_at": "2025-09-22T10:21:14.393467",
-  "total_files": 58,
+  "generated_at": "2025-09-22T11:03:38.174127",
+  "total_files": 57,
   "android_min_api": 19,
   "encryption_method": "fallback"
 }

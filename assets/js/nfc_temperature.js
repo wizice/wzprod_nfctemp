@@ -224,6 +224,9 @@ window.displayTemperatureData = function(data) {
     // 측정 정보 표시 (기존)
     updateMeasurementInfo(data.settings );
 
+    // 요약 정보 업데이트 (최고/최저 온도 등)
+    updateSummary(data);
+
     // 데이터 테이블 업데이트 - 파싱된 데이터 사용
     updateDataTable(chartData);
 
@@ -339,13 +342,13 @@ function updateTagInfo(uid) {
 // 요약 정보 업데이트
 function updateSummary(data) {
     // 최저 온도
-    const minTempElement = document.getElementById('minTemp');
+    const minTempElement = document.getElementById('minTempValue');
     if (minTempElement) {
         minTempElement.textContent = data.minTemp ? `${data.minTemp.toFixed(1)}°C` : '-';
     }
 
     // 최고 온도
-    const maxTempElement = document.getElementById('maxTemp');
+    const maxTempElement = document.getElementById('maxTempValue');
     if (maxTempElement) {
         maxTempElement.textContent = data.maxTemp ? `${data.maxTemp.toFixed(1)}°C` : '-';
     }
