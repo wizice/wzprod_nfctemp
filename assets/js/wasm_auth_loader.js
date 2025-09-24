@@ -191,48 +191,66 @@ async function initializeWasmAuth() {
 // 수동 메모리 관리 함수들은 더 이상 필요하지 않음
 
 /**
- * NFC 태그 인증 (WASM 사용)
+ * NFC 태그 인증 (WASM 사용 - 상세 응답)
  */
-async function authenticateTagWithWasm(uid) {
+async function authenticateTagWithWasmDetailed(uid) {
     try {
         if (!authenticator) {
             console.log('WASM not initialized, initializing now...');
             const initialized = await initializeWasmAuth();
             if (!initialized) {
-                throw new Error('WASM initialization failed');
+                return {
+                    authenticated: false,
+                    status: 'WASM_NOT_AVAILABLE',
+                    message: 'WASM initialization failed'
+                };
             }
         }
         
-        console.log('Authenticating tag with WASM:', uid);
-        
-        // WasmAuth의 encrypt_uid 메서드 직접 호출
-        const encryptedUuid = authenticator.encrypt_uid(uid);
-        
-        console.log('Encrypted UUID:', encryptedUuid);
+        console.log('Authenticating tag with WASM (detailed):', uid);
         
         // 앱 버전 정보
         const appVersion = '1.0.0';
         
-        // Firebase Functions 호출
-        const response = await fetch(FIREBASE_FUNCTIONS_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                encrypted_uuid: encryptedUuid,
-                timestamp: Date.now(),
-                nonce: generateNonce(),
-                app_version: appVersion
-            })
-        });
+        // WASM의 상세 인증 메서드 호출
+        const result = await authenticator.verify_tag_detailed(uid, appVersion);
         
-        const result = await response.json();
+        console.log('Detailed authentication result:', result);
         
-        console.log('Authentication result:', result);
+        // Android WebView 콜백 호출
+        if (typeof WasmCallback !== 'undefined' && WasmCallback.onAuthResult) {
+            console.log('Calling WasmCallback.onAuthResult:', result.status);
+            WasmCallback.onAuthResult(result.status);
+        }
         
-        return result.authenticated;
+        return result;
         
+    } catch (error) {
+        console.error('WASM authentication error:', error);
+        
+        const errorResult = {
+            authenticated: false,
+            status: 'WASM_ERROR',
+            message: error.message || 'WASM authentication failed'
+        };
+        
+        // Android WebView 콜백 호출
+        if (typeof WasmCallback !== 'undefined' && WasmCallback.onAuthResult) {
+            console.log('Calling WasmCallback.onAuthResult:', errorResult.status);
+            WasmCallback.onAuthResult(errorResult.status);
+        }
+        
+        return errorResult;
+    }
+}
+
+/**
+ * NFC 태그 인증 (WASM 사용 - 기존 호환성)
+ */
+async function authenticateTagWithWasm(uid) {
+    try {
+        const detailedResult = await authenticateTagWithWasmDetailed(uid);
+        return detailedResult.authenticated;
     } catch (error) {
         console.error('WASM authentication error:', error);
         
@@ -278,6 +296,7 @@ async function fallbackAuthentication(uid) {
  * 전역 함수로 노출 (Android WebView에서 호출)
  */
 window.authenticateNfcTag = authenticateTagWithWasm;
+window.authenticateNfcTagDetailed = authenticateTagWithWasmDetailed;
 window.initializeWasmAuth = initializeWasmAuth;
 
 // 페이지 로드 시 자동 초기화 - 지연 실행

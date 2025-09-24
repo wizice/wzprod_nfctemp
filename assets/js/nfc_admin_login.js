@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 자동 로그인 체크
 function checkAutoLogin() {
-    const savedUser = sessionStorage.getItem('currentUser');
+    const savedUser = localStorage.getItem('currentUser');
     if (savedUser) {
         // 이미 로그인된 상태면 대시보드로 이동
 
@@ -153,7 +153,7 @@ window.onAdminLoginSuccess = function(username, role) {
         loginTime: Date.now()
     };
 
-    sessionStorage.setItem('currentUser', JSON.stringify(userInfo));
+    localStorage.setItem('currentUser', JSON.stringify(userInfo));
     
     // 로그인 성공 시 'rememberMe' 체크 상태에 따라 자격증명 저장
     const rememberMe = document.getElementById('rememberMe').checked;

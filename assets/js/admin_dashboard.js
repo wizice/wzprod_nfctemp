@@ -76,7 +76,7 @@ function initializeDashboard() {
 // 현재 사용자 정보 로드
 function loadCurrentUser() {
     // 세션에서 사용자 정보 가져오기
-    const userInfo = sessionStorage.getItem('currentUser');
+    const userInfo = localStorage.getItem('currentUser');
     if (userInfo) {
         currentUser = JSON.parse(userInfo);
         updateUserDisplay();
@@ -263,8 +263,8 @@ function updateMenuVisibility() {
 function logout() {
     if (confirm('로그아웃 하시겠습니까?')) {
         // 세션 정리
-        sessionStorage.removeItem('currentUser');
-        sessionStorage.removeItem('authToken');
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('authToken');
 
         // Android 네이티브 로그아웃 호출
         if (window.Android && window.Android.logout) {

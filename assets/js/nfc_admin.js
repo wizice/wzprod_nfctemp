@@ -241,6 +241,9 @@ function go_temparature_page() {
     // Call native method
     let ts = new Date().getTime();
     //let move_url     =   "nfc_temperature_main.html?ts=" + ts ;
+    // 관리자 화면에서 호출한 것을 알림
+    localStorage.setItem('req_from_admin', 'Y');
+
     let move_url     =   "nfc_main.html?ts=" + new Date().getTime() ;
     gwzCommon.fn_move_url( move_url );
 }

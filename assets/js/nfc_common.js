@@ -1,19 +1,19 @@
 let gwzCommon = {
     // back_url 설정
     set_back_url:function(currentTagUid){
-         sessionStorage.setItem("back_url", "nfc_admin_settings.html");
-         sessionStorage.setItem("currentTagUid", currentTagUid);
+         localStorage.setItem("back_url", "nfc_admin_settings.html");
+         localStorage.setItem("currentTagUid", currentTagUid);
     },
     get_back_url:function(){
-         const currentTagUid   = sessionStorage.getItem("currentTagUid" );
+         const currentTagUid   = localStorage.getItem("currentTagUid" );
          return currentTagUid;
     },
       // back_url 삭제
     clear_back_url:function(){
-        let back_url     = sessionStorage.getItem("back_url") || "nfc_main.html";
+        let back_url     = localStorage.getItem("back_url") || "nfc_main.html";
         if ( back_url && back_url > "" ) {
-            sessionStorage.setItem("back_url", "");
-            sessionStorage.setItem("currentTagUid", "");
+            localStorage.setItem("back_url", "");
+            localStorage.setItem("currentTagUid", "");
         }
         return back_url
     },

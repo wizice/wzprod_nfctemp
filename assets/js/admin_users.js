@@ -61,7 +61,7 @@ function initializePage() {
 
 // 현재 사용자 정보 로드
 function loadCurrentUser() {
-    const userInfo = sessionStorage.getItem('currentUser');
+    const userInfo = localStorage.getItem('currentUser');
     if (userInfo) {
         currentUser = JSON.parse(userInfo);
 

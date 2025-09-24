@@ -157,6 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
+    localStorage.removeItem("currentTagUid");
+
 });
 
 // NFC 상태 초기화
@@ -314,6 +316,7 @@ window.updateNfcStatus = updateNfcStatus;
 
 // NFC 태그 감지 콜백 - 수정된 버전
 function onNfcTagDetected(uid) {
+
     console.log('NFC tag detected with UID:', uid);
 
     if (app.isModalOpen) return;
@@ -339,6 +342,13 @@ function onNfcTagDetected(uid) {
 
 // 태그 인증 성공 콜백 - 수정된 버전
 function onTagAuthenticated(uid) {
+    if (gwzCommon.get_back_url() ) {
+        const req_from_admin = localStorage.getItem('req_from_admin') || '';
+        if ( req_from_admin == "Y") {
+            setTimeout(function(){ localStorage.setItem('req_from_admin', '')}, 300) ; // 플래그 정보 삭제
+            return false;
+        }
+    }
     console.log('Tag authenticated:', uid);
 
     app.isScanning = false;

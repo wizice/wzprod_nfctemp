@@ -221,11 +221,11 @@ export function init_panic_hook() {
 }
 
 function __wbg_adapter_36(arg0, arg1, arg2) {
-    wasm.closure60_externref_shim(arg0, arg1, arg2);
+    wasm.closure68_externref_shim(arg0, arg1, arg2);
 }
 
-function __wbg_adapter_110(arg0, arg1, arg2, arg3) {
-    wasm.closure71_externref_shim(arg0, arg1, arg2, arg3);
+function __wbg_adapter_113(arg0, arg1, arg2, arg3) {
+    wasm.closure79_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const __wbindgen_enum_RequestMode = ["same-origin", "no-cors", "cors", "navigate"];
@@ -290,7 +290,21 @@ export class NfcAuthenticator {
         }
     }
     /**
-     * Firebase Functions 호출하여 인증 확인
+     * Firebase Functions 호출하여 인증 확인 (상세 응답)
+     * @param {string} uid
+     * @param {string} app_version
+     * @returns {Promise<any>}
+     */
+    verify_tag_detailed(uid, app_version) {
+        const ptr0 = passStringToWasm0(uid, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ptr1 = passStringToWasm0(app_version, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len1 = WASM_VECTOR_LEN;
+        const ret = wasm.nfcauthenticator_verify_tag_detailed(this.__wbg_ptr, ptr0, len0, ptr1, len1);
+        return ret;
+    }
+    /**
+     * Firebase Functions 호출하여 인증 확인 (기존 호환성용)
      * @param {string} uid
      * @param {string} app_version
      * @returns {Promise<boolean>}
@@ -485,7 +499,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_110(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_113(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -549,6 +563,9 @@ function __wbg_get_imports() {
     imports.wbg.__wbg_resolve_0dac8c580ffd4678 = function(arg0) {
         const ret = Promise.resolve(arg0);
         return ret;
+    };
+    imports.wbg.__wbg_set_3f1d0b984ed272ed = function(arg0, arg1, arg2) {
+        arg0[arg1] = arg2;
     };
     imports.wbg.__wbg_set_b042eef31c50834d = function() { return handleError(function (arg0, arg1, arg2, arg3, arg4) {
         arg0.set(getStringFromWasm0(arg1, arg2), getStringFromWasm0(arg3, arg4));
@@ -622,8 +639,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper338 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 59, __wbg_adapter_36);
+    imports.wbg.__wbindgen_closure_wrapper356 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 67, __wbg_adapter_36);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
